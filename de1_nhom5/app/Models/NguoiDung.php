@@ -18,10 +18,17 @@ class NguoiDung extends Authenticatable
         'email',
         'mat_khau',
         'tien_te',
+        'ngon_ngu',
         'ngay_tao',
         'otp',
         'otp_expires_at',
         'email_verified_at',
+        'anh_dai_dien',
+        'password_changed_at',
+    ];
+
+    protected $casts = [
+        'password_changed_at' => 'datetime',
     ];
 
     const CREATED_AT = 'ngay_tao';
