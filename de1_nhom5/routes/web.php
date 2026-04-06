@@ -2,21 +2,21 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\BudgetController;
+use App\Http\Controllers\SavingsGoalController;
+use App\Http\Controllers\RecurringTransactionController;
+use App\Http\Controllers\DanhMucController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
 */
 
-Route::get('/', function () { return view('dashboard'); })->name('dashboard');
-Route::get('/ngan-sach', function () { return view('ngansach'); })->name('ngansach');
+Route::get('/', [DashboardController::class, 'index'])->middleware('auth')->name('dashboard');
 Route::get('/phan-tich-ai', function () { return view('phantichAi'); })->name('phantich-ai');
 Route::get('/tro-ly-giao-dich-ai', function () { return view('TroligiaodichAi'); })->name('tro-ly-giao-dich-ai');
 Route::get('/huong-dan', function () { return view('huongdan'); })->name('huongdan');
@@ -41,6 +41,33 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    // Transactions
+    Route::get('/giao-dich', [TransactionController::class, 'index'])->name('transactions.index');
+    Route::post('/giao-dich/chi-tiep', [TransactionController::class, 'storeExpense'])->name('transactions.expense.store');
+    Route::post('/giao-dich/thu-nhap', [TransactionController::class, 'storeIncome'])->name('transactions.income.store');
+
+    // Budget
+    Route::get('/ngan-sach', [BudgetController::class, 'index'])->name('ngansach');
+    Route::post('/ngan-sach', [BudgetController::class, 'store'])->name('budget.store');
+    Route::delete('/ngan-sach/{id}', [BudgetController::class, 'destroy'])->name('budget.destroy');
+
+    // Savings Goals
+    Route::get('/tiet-kiem', [SavingsGoalController::class, 'index'])->name('savings.index');
+    Route::post('/tiet-kiem', [SavingsGoalController::class, 'store'])->name('savings.store');
+    Route::patch('/savings/{id}/add', [SavingsGoalController::class, 'update'])->name('savings.update');
+    Route::delete('/tiet-kiem/{id}', [SavingsGoalController::class, 'destroy'])->name('savings.destroy');
+
+    // Recurring Transactions
+    Route::get('/giao-dich-dinh-ky', [RecurringTransactionController::class, 'index'])->name('recurring.index');
+    Route::post('/giao-dich-dinh-ky', [RecurringTransactionController::class, 'store'])->name('recurring.store');
+    Route::patch('/giao-dich-dinh-ky/{id}/toggle', [RecurringTransactionController::class, 'toggle'])->name('recurring.toggle');
+    Route::delete('/giao-dich-dinh-ky/{id}', [RecurringTransactionController::class, 'destroy'])->name('recurring.destroy');
+
+    // Category Management (DanhMuc)
+    Route::get('/danh-muc', [DanhMucController::class, 'index'])->name('danhmuc.index');
+    Route::post('/danh-muc', [DanhMucController::class, 'store'])->name('danhmuc.store');
+    Route::delete('/danh-muc/{id}', [DanhMucController::class, 'destroy'])->name('danhmuc.destroy');
     
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -52,3 +79,4 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile/password/verify', [ProfileController::class, 'showPasswordOtpForm'])->name('profile.password.verify');
     Route::post('/profile/password/verify', [ProfileController::class, 'verifyPasswordOtp'])->name('profile.password.verify.post');
 });
+

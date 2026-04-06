@@ -110,8 +110,8 @@
                 <span class="material-symbols-outlined" {{ request()->routeIs('dashboard') ? 'style=font-variation-settings:\'FILL\'1;' : '' }}>dashboard</span>
                 Tổng quan
             </a>
-            <a class="group flex items-center gap-3 px-6 py-3 transition-all font-['Manrope'] text-sm font-semibold {{ request()->routeIs('tro-ly-giao-dich-ai') ? 'text-[#24389c] dark:text-[#3f51b5] relative before:content-[\'\'] before:absolute before:left-0 before:w-1 before:h-6 before:bg-[#24389c] before:rounded-full bg-white/40' : 'text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-[#24389c] hover:bg-white/50' }}" href="{{ route('tro-ly-giao-dich-ai') }}">
-                <span class="material-symbols-outlined" {{ request()->routeIs('tro-ly-giao-dich-ai') ? 'style=font-variation-settings:\'FILL\'1;' : '' }}>receipt_long</span>
+            <a class="group flex items-center gap-3 px-6 py-3 transition-all font-['Manrope'] text-sm font-semibold {{ request()->routeIs('transactions.*') ? 'text-[#24389c] dark:text-[#3f51b5] relative before:content-[\'\'] before:absolute before:left-0 before:w-1 before:h-6 before:bg-[#24389c] before:rounded-full bg-white/40' : 'text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-[#24389c] hover:bg-white/50' }}" href="{{ route('transactions.index') }}">
+                <span class="material-symbols-outlined" {{ request()->routeIs('transactions.*') ? 'style=font-variation-settings:\'FILL\'1;' : '' }}>receipt_long</span>
                 Giao dịch
             </a>
             <a class="group flex items-center gap-3 px-6 py-3 transition-all font-['Manrope'] text-sm font-semibold {{ request()->routeIs('phantich-ai') ? 'text-[#24389c] dark:text-[#3f51b5] relative before:content-[\'\'] before:absolute before:left-0 before:w-1 before:h-6 before:bg-[#24389c] before:rounded-full bg-white/40' : 'text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-[#24389c] hover:bg-white/50' }}" href="{{ route('phantich-ai') }}">
@@ -122,12 +122,23 @@
                 <span class="material-symbols-outlined" {{ request()->routeIs('ngansach') ? 'style=font-variation-settings:\'FILL\'1;' : '' }}>pie_chart</span>
                 Ngân sách
             </a>
-            <a class="group flex items-center gap-3 px-6 py-3 text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-[#24389c] hover:bg-white/50 transition-all font-['Manrope'] text-sm font-semibold" href="#">
-                <span class="material-symbols-outlined">lock</span>
-                Kho an toàn
+            <a class="group flex items-center gap-3 px-6 py-3 transition-all font-['Manrope'] text-sm font-semibold {{ request()->routeIs('savings.index') ? 'text-[#24389c] dark:text-[#3f51b5] relative before:content-[\'\'] before:absolute before:left-0 before:w-1 before:h-6 before:bg-[#24389c] before:rounded-full bg-white/40' : 'text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-[#24389c] hover:bg-white/50' }}" href="{{ route('savings.index') }}">
+                <span class="material-symbols-outlined" {{ request()->routeIs('savings.index') ? 'style=font-variation-settings:\'FILL\'1;' : '' }}>savings</span>
+                Tiết kiệm
+            </a>
+            <a class="group flex items-center gap-3 px-6 py-3 transition-all font-['Manrope'] text-sm font-semibold {{ request()->routeIs('recurring.index') ? 'text-[#24389c] dark:text-[#3f51b5] relative before:content-[\'\'] before:absolute before:left-0 before:w-1 before:h-6 before:bg-[#24389c] before:rounded-full bg-white/40' : 'text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-[#24389c] hover:bg-white/50' }}" href="{{ route('recurring.index') }}">
+                <span class="material-symbols-outlined" {{ request()->routeIs('recurring.index') ? 'style=font-variation-settings:\'FILL\'1;' : '' }}>event_repeat</span>
+                Định kỳ
             </a>
         </nav>
         <div class="mt-auto pt-6 border-t border-primary/5">
+            <a class="group flex items-center gap-3 px-6 py-3 transition-all font-['Manrope'] text-sm font-semibold {{ request()->routeIs('danhmuc.index') ? 'text-[#24389c] dark:text-[#3f51b5] relative before:content-[\'\'] before:absolute before:left-0 before:w-1 before:h-6 before:bg-[#24389c] before:rounded-full bg-white/40' : 'text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-[#24389c] hover:bg-white/50' }}" href="{{ route('danhmuc.index') }}">
+                <span class="material-symbols-outlined" {{ request()->routeIs('danhmuc.index') ? 'style=font-variation-settings:\'FILL\'1;' : '' }}>category</span>
+                Danh mục
+            </a>
+            <a class="group flex items-center gap-3 px-6 py-3 text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-[#24389c] hover:bg-white/50 transition-all font-['Manrope'] text-sm font-semibold" href="#">
+                <span class="material-symbols-outlined">lock</span>
+                Kho an toàn
             <a class="group flex items-center gap-3 px-6 py-3 {{ request()->routeIs('huongdan') ? 'text-primary font-bold bg-primary/10' : 'text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-[#24389c] hover:bg-white/5' }} transition-all font-['Manrope'] text-sm font-semibold" href="{{ route('huongdan') }}">
                 <span class="material-symbols-outlined" {{ request()->routeIs('huongdan') ? 'style=font-variation-settings:\'FILL\'1;' : '' }}>help_outline</span>
                 Hướng dẫn SD
