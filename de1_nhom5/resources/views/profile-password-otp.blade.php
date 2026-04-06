@@ -58,16 +58,6 @@
             </div>
         @endif
 
-        @if ($errors->any())
-            <div class="mb-6 p-4 rounded-xl bg-error-container border border-error/20">
-                <ul class="list-disc pl-5 text-sm text-on-error-container font-medium space-y-1">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
         <form method="POST" action="{{ route('profile.password.verify.post') }}" class="space-y-6">
             @csrf
             
@@ -76,7 +66,10 @@
                 <label class="block text-sm font-bold text-on-surface mb-2">Mã OTP (6 số)</label>
                 <div class="relative">
                     <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">password</span>
-                    <input type="text" name="otp" required maxlength="6" class="w-full pl-12 pr-4 py-3 bg-surface-container border-none rounded-xl focus:ring-2 focus:ring-primary transition-all font-medium placeholder-outline" placeholder="123456" />
+                    <input type="text" name="otp" maxlength="6" class="w-full pl-12 pr-4 py-3 bg-surface-container border-none rounded-xl focus:ring-2 focus:ring-primary transition-all font-medium placeholder-outline @error('otp') border border-error bg-error-container/10 @enderror" placeholder="123456" />
+                    @error('otp')
+                        <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
 
@@ -85,7 +78,10 @@
                 <label class="block text-sm font-bold text-on-surface mb-2">Mật khẩu mới</label>
                 <div class="relative">
                     <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">lock</span>
-                    <input type="password" name="password" required minlength="8" class="w-full pl-12 pr-4 py-3 bg-surface-container border-none rounded-xl focus:ring-2 focus:ring-primary transition-all font-medium placeholder-outline" placeholder="Tối thiểu 8 ký tự" />
+                    <input type="password" name="password" minlength="8" class="w-full pl-12 pr-4 py-3 bg-surface-container border-none rounded-xl focus:ring-2 focus:ring-primary transition-all font-medium placeholder-outline @error('password') border border-error bg-error-container/10 @enderror" placeholder="Tối thiểu 8 ký tự" />
+                    @error('password')
+                        <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
 
@@ -94,7 +90,10 @@
                 <label class="block text-sm font-bold text-on-surface mb-2">Xác nhận mật khẩu</label>
                 <div class="relative">
                     <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">lock_check</span>
-                    <input type="password" name="confirm-password" required minlength="8" class="w-full pl-12 pr-4 py-3 bg-surface-container border-none rounded-xl focus:ring-2 focus:ring-primary transition-all font-medium placeholder-outline" placeholder="Nhập lại mật khẩu" />
+                    <input type="password" name="confirm-password" minlength="8" class="w-full pl-12 pr-4 py-3 bg-surface-container border-none rounded-xl focus:ring-2 focus:ring-primary transition-all font-medium placeholder-outline @error('confirm-password') border border-error bg-error-container/10 @enderror" placeholder="Nhập lại mật khẩu" />
+                    @error('confirm-password')
+                        <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
 

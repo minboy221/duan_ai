@@ -9,15 +9,16 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\OtpMail;
 use Carbon\Carbon;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\VerifyOtpRequest;
+use App\Http\Requests\Auth\ForgotPasswordRequest;
+use App\Http\Requests\Auth\ResetPasswordRequest;
 
 class AuthController extends Controller
 {
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
-        ]);
 
         $user = NguoiDung::where('email', $request->email)->first();
 
@@ -40,16 +41,8 @@ class AuthController extends Controller
         return back()->withErrors(['error' => 'Email hoặc mật khẩu không chính xác.'])->withInput();
     }
 
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $request->validate([
-            'fullname' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:nguoi_dung',
-            'password' => 'required|string|min:8|same:confirm-password',
-        ], [
-            'password.same' => 'Mật khẩu xác nhận không khớp.',
-            'email.unique' => 'Email này đã được sử dụng.'
-        ]);
 
         $otp = rand(100000, 999999);
 
@@ -75,12 +68,8 @@ class AuthController extends Controller
         return view('auth.verify-otp', ['email' => $request->email]);
     }
 
-    public function verifyOtp(Request $request)
+    public function verifyOtp(VerifyOtpRequest $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'otp' => 'required|digits:6'
-        ]);
 
         $user = NguoiDung::where('email', $request->email)->first();
 
@@ -103,9 +92,8 @@ class AuthController extends Controller
         return view('auth.forgot-password');
     }
 
-    public function sendResetOtp(Request $request)
+    public function sendResetOtp(ForgotPasswordRequest $request)
     {
-        $request->validate(['email' => 'required|email']);
         $user = NguoiDung::where('email', $request->email)->first();
         if (!$user) return back()->withErrors(['email' => 'Email không tồn tại trong hệ thống.']);
 
@@ -127,15 +115,8 @@ class AuthController extends Controller
         return view('auth.reset-password', ['email' => $request->email]);
     }
 
-    public function resetPassword(Request $request)
+    public function resetPassword(ResetPasswordRequest $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'otp' => 'required|digits:6',
-            'password' => 'required|string|min:8|same:confirm-password',
-        ], [
-            'password.same' => 'Mật khẩu xác nhận không khớp.'
-        ]);
 
         $user = NguoiDung::where('email', $request->email)->first();
         

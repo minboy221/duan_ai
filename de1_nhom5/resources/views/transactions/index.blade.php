@@ -95,7 +95,7 @@
 </div>
 
 <!-- Modal: Add Income -->
-<div id="income-modal" class="fixed inset-0 bg-black/60 hidden backdrop-blur-sm z-50 flex items-center justify-center">
+<div id="income-modal" class="fixed inset-0 bg-black/60 {{ $errors->hasAny(['nguon_thu', 'ngay_nhan']) ? '' : 'hidden' }} backdrop-blur-sm z-50 flex items-center justify-center">
     <div class="bg-surface-container-lowest p-8 rounded-3xl shadow-2xl w-full max-w-md border border-outline-variant/10 relative">
         <button onclick="document.getElementById('income-modal').classList.add('hidden')" class="absolute top-4 right-4 text-outline hover:text-on-surface">
             <span class="material-symbols-outlined" data-icon="close">close</span>
@@ -105,23 +105,35 @@
             @csrf
             <div>
                 <label class="block text-sm font-semibold mb-2">Tên nguồn thu</label>
-                <input type="text" name="nguon_thu" required class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary">
+                <input type="text" name="nguon_thu" value="{{ old('nguon_thu') }}" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('nguon_thu') border border-error bg-error-container/10 @enderror">
+                @error('nguon_thu')
+                    <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                @enderror
             </div>
             <div>
                 <label class="block text-sm font-semibold mb-2">Số tiền (VNĐ)</label>
-                <input type="number" name="so_tien" min="0" required class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary">
+                <input type="number" name="so_tien" value="{{ old('so_tien') }}" min="0" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('so_tien') border border-error bg-error-container/10 @enderror">
+                @error('so_tien')
+                    <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                @enderror
             </div>
             <div>
                 <label class="block text-sm font-semibold mb-2">Danh mục</label>
-                <select name="danh_muc_id" required class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary">
+                <select name="danh_muc_id" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('danh_muc_id') border border-error bg-error-container/10 @enderror">
                     @foreach($danhMucs->where('loai', 'thu') as $cat)
-                        <option value="{{ $cat->id }}">{{ $cat->ten_danh_muc }}</option>
+                        <option value="{{ $cat->id }}" {{ old('danh_muc_id') == $cat->id ? 'selected' : '' }}>{{ $cat->ten_danh_muc }}</option>
                     @endforeach
                 </select>
+                @error('danh_muc_id')
+                    <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                @enderror
             </div>
             <div>
                 <label class="block text-sm font-semibold mb-2">Ngày nhận</label>
-                <input type="date" name="ngay_nhan" required value="{{ date('Y-m-d') }}" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary">
+                <input type="date" name="ngay_nhan" value="{{ old('ngay_nhan', date('Y-m-d')) }}" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('ngay_nhan') border border-error bg-error-container/10 @enderror">
+                @error('ngay_nhan')
+                    <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                @enderror
             </div>
             <div>
                 <label class="block text-sm font-semibold mb-2">Ghi chú (Tuỳ chọn)</label>
@@ -135,7 +147,7 @@
 </div>
 
 <!-- Modal: Add Expense -->
-<div id="expense-modal" class="fixed inset-0 bg-black/60 hidden backdrop-blur-sm z-50 flex items-center justify-center">
+<div id="expense-modal" class="fixed inset-0 bg-black/60 {{ $errors->hasAny(['ngay_giao_dich', 'ghi_chu']) && !$errors->has('nguon_thu') ? '' : 'hidden' }} backdrop-blur-sm z-50 flex items-center justify-center">
     <div class="bg-surface-container-lowest p-8 rounded-3xl shadow-2xl w-full max-w-md border border-outline-variant/10 relative">
         <button onclick="document.getElementById('expense-modal').classList.add('hidden')" class="absolute top-4 right-4 text-outline hover:text-on-surface">
             <span class="material-symbols-outlined" data-icon="close">close</span>
@@ -145,23 +157,35 @@
             @csrf
             <div>
                 <label class="block text-sm font-semibold mb-2">Mô tả/Tên giao dịch</label>
-                <input type="text" name="ghi_chu" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary">
+                <input type="text" name="ghi_chu" value="{{ old('ghi_chu') }}" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('ghi_chu') border border-error bg-error-container/10 @enderror">
+                @error('ghi_chu')
+                    <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                @enderror
             </div>
             <div>
                 <label class="block text-sm font-semibold mb-2">Số tiền (VNĐ)</label>
-                <input type="number" name="so_tien" min="0" required class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary">
+                <input type="number" name="so_tien" value="{{ old('so_tien') }}" min="0" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('so_tien') border border-error bg-error-container/10 @enderror">
+                @error('so_tien')
+                    <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                @enderror
             </div>
             <div>
                 <label class="block text-sm font-semibold mb-2">Danh mục</label>
-                <select name="danh_muc_id" required class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary">
+                <select name="danh_muc_id" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('danh_muc_id') border border-error bg-error-container/10 @enderror">
                     @foreach($danhMucs->where('loai', 'chi') as $cat)
-                        <option value="{{ $cat->id }}">{{ $cat->ten_danh_muc }}</option>
+                        <option value="{{ $cat->id }}" {{ old('danh_muc_id') == $cat->id ? 'selected' : '' }}>{{ $cat->ten_danh_muc }}</option>
                     @endforeach
                 </select>
+                @error('danh_muc_id')
+                    <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                @enderror
             </div>
             <div>
                 <label class="block text-sm font-semibold mb-2">Ngày giao dịch</label>
-                <input type="date" name="ngay_giao_dich" required value="{{ date('Y-m-d') }}" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary">
+                <input type="date" name="ngay_giao_dich" value="{{ old('ngay_giao_dich', date('Y-m-d')) }}" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('ngay_giao_dich') border border-error bg-error-container/10 @enderror">
+                @error('ngay_giao_dich')
+                    <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                @enderror
             </div>
             <div class="pt-4">
                 <button type="submit" class="w-full bg-tertiary text-white py-3 rounded-xl font-bold shadow-lg hover:bg-tertiary/90 transition-all">Lưu Khoản Chi</button>

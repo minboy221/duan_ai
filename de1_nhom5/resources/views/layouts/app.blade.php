@@ -188,6 +188,20 @@
 
         <!-- Main Content Content -->
         <div class="p-8 flex-1">
+            @if (session('success'))
+                <div class="mb-6 p-4 bg-secondary-container text-on-secondary-container rounded-2xl border border-secondary/20 flex items-center gap-3 shadow-sm animate-in fade-in slide-in-from-top-4 duration-300">
+                    <span class="material-symbols-outlined text-secondary">check_circle</span>
+                    <p class="font-bold text-sm">{{ session('success') }}</p>
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="mb-6 p-4 bg-error-container text-on-error-container rounded-2xl border border-error/20 flex items-center gap-3 shadow-sm animate-in fade-in slide-in-from-top-4 duration-300">
+                    <span class="material-symbols-outlined text-error">warning</span>
+                    <p class="font-bold text-sm">{{ session('error') }}</p>
+                </div>
+            @endif
+
             @yield('content')
         </div>
     </main>

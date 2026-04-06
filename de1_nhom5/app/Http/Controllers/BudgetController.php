@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Requests\Budget\StoreBudgetRequest;
 use App\Models\NganSach;
 use App\Models\DanhMuc;
 use App\Models\GiaoDich;
@@ -44,14 +45,8 @@ class BudgetController extends Controller
         return view('budget.index', compact('budgets', 'danhMucs', 'month', 'year'));
     }
 
-    public function store(Request $request)
+    public function store(StoreBudgetRequest $request)
     {
-        $request->validate([
-            'danh_muc_id' => 'required|exists:danh_muc,id',
-            'so_tien_han_muc' => 'required|numeric|min:0',
-            'thang' => 'required|integer|min:1|max:12',
-            'nam' => 'required|integer|min:2000|max:2100',
-        ]);
 
         NganSach::updateOrCreate(
             [

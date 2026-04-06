@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Requests\RecurringTransaction\StoreRecurringRequest;
 use App\Models\GiaoDichDinhKy;
 use App\Models\DanhMuc;
 use Illuminate\Support\Facades\Auth;
@@ -22,16 +23,8 @@ class RecurringTransactionController extends Controller
         return view('recurring.index', compact('recurrings', 'danhMucs'));
     }
 
-    public function store(Request $request)
+    public function store(StoreRecurringRequest $request)
     {
-        $request->validate([
-            'danh_muc_id' => 'required|exists:danh_muc,id',
-            'loai_giao_dich' => 'required|in:thu,chi',
-            'so_tien' => 'required|numeric|min:1',
-            'chu_ky' => 'required|in:hang_ngay,hang_tuan,hang_thang,hang_nam',
-            'ngay_bat_dau' => 'required|date',
-            'ngay_ket_thuc' => 'nullable|date|after:ngay_bat_dau',
-        ]);
 
         GiaoDichDinhKy::create([
             'nguoi_dung_id' => Auth::id(),

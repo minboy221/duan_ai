@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Requests\Category\StoreCategoryRequest;
 use App\Models\DanhMuc;
 use Illuminate\Support\Facades\Auth;
 
@@ -18,13 +19,8 @@ class DanhMucController extends Controller
         return view('danhmuc.index', compact('danhMucs'));
     }
 
-    public function store(Request $request)
+    public function store(StoreCategoryRequest $request)
     {
-        $request->validate([
-            'ten_danh_muc' => 'required|string|max:255',
-            'loai' => 'required|in:thu,chi',
-            'biu_tuong' => 'required|string|max:50',
-        ]);
 
         DanhMuc::create([
             'nguoi_dung_id' => Auth::id(),

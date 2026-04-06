@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Requests\SavingsGoal\StoreSavingsGoalRequest;
+use App\Http\Requests\SavingsGoal\UpdateSavingsGoalRequest;
 use App\Models\MucTieuTietKiem;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,14 +23,8 @@ class SavingsGoalController extends Controller
         return view('savings.index', compact('goals'));
     }
 
-    public function store(Request $request)
+    public function store(StoreSavingsGoalRequest $request)
     {
-        $request->validate([
-            'ten_muc_tieu' => 'required|string|max:255',
-            'so_tien_muc_tieu' => 'required|numeric|min:1',
-            'so_tien_hien_tai' => 'nullable|numeric|min:0',
-            'han_chot' => 'required|date',
-        ]);
 
         MucTieuTietKiem::create([
             'nguoi_dung_id' => Auth::id(),
@@ -42,13 +38,9 @@ class SavingsGoalController extends Controller
         return redirect()->route('savings.index')->with('success', 'Đã thêm mục tiêu tiết kiệm thành công.');
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateSavingsGoalRequest $request, $id)
     {
         $goal = MucTieuTietKiem::where('id', $id)->where('nguoi_dung_id', Auth::id())->firstOrFail();
-
-        $request->validate([
-            'so_tien_them' => 'required|numeric|min:0',
-        ]);
 
         $goal->so_tien_hien_tai += $request->so_tien_them;
         

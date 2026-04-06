@@ -40,16 +40,6 @@
                     </div>
                 @endif
                 
-                @if ($errors->any())
-                    <div class="mb-6 bg-error-container text-on-error-container p-4 rounded-xl text-sm border border-error/20 font-medium">
-                        <ul class="list-disc pl-5">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
                 <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     @csrf
                     
@@ -57,7 +47,10 @@
                     
                     <div class="space-y-2">
                         <label class="text-sm font-semibold text-on-surface-variant">Họ và tên</label>
-                        <input name="ho_ten" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 transition-all font-medium" type="text" value="{{ old('ho_ten', $user->ho_ten ?? '') }}" />
+                        <input name="ho_ten" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 transition-all font-medium @error('ho_ten') border border-error bg-error-container/10 @enderror" type="text" value="{{ old('ho_ten', $user->ho_ten ?? '') }}" />
+                        @error('ho_ten')
+                            <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                        @enderror
                     </div>
                     
                     <div class="space-y-2">

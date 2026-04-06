@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Requests\Transaction\StoreExpenseRequest;
+use App\Http\Requests\Transaction\StoreIncomeRequest;
+use App\Notifications\BudgetExceededNotification;
+use App\Models\NganSach;
 use App\Models\GiaoDich;
 use App\Models\KhoanThu;
 use App\Models\DanhMuc;
@@ -77,16 +81,10 @@ class TransactionController extends Controller
         return view('transactions.index', compact('transactions', 'month', 'danhMucs', 'query'));
     }
 
-    public function storeExpense(Request $request)
+    public function storeExpense(StoreExpenseRequest $request)
     {
-        $request->validate([
-            'danh_muc_id' => 'required|exists:danh_muc,id',
-            'so_tien' => 'required|numeric|min:0',
-            'ngay_giao_dich' => 'required|date',
-            'ghi_chu' => 'nullable|string',
-        ]);
 
-        GiaoDich::create([
+        $expense = GiaoDich::create([
             'nguoi_dung_id' => Auth::id(),
             'danh_muc_id' => $request->danh_muc_id,
             'so_tien' => $request->so_tien,
@@ -94,18 +92,39 @@ class TransactionController extends Controller
             'ghi_chu' => $request->ghi_chu,
         ]);
 
+        // Kiểm tra vượt ngân sách
+        $ngayGiaoDich = \Carbon\Carbon::parse($request->ngay_giao_dich);
+        $thang = $ngayGiaoDich->month;
+        $nam = $ngayGiaoDich->year;
+
+        $nganSach = NganSach::where('nguoi_dung_id', Auth::id())
+            ->where('danh_muc_id', $request->danh_muc_id)
+            ->where('thang', $thang)
+            ->where('nam', $nam)
+            ->first();
+
+        if ($nganSach) {
+            $tongDaChi = GiaoDich::where('nguoi_dung_id', Auth::id())
+                ->where('danh_muc_id', $request->danh_muc_id)
+                ->whereMonth('ngay_giao_dich', $thang)
+                ->whereYear('ngay_giao_dich', $nam)
+                ->sum('so_tien');
+
+            if ($tongDaChi > $nganSach->so_tien_han_muc) {
+                $user = Auth::user();
+                $user->notify(new BudgetExceededNotification(
+                    $nganSach->danhMuc->ten_danh_muc,
+                    $tongDaChi,
+                    $nganSach->so_tien_han_muc
+                ));
+            }
+        }
+
         return redirect()->route('transactions.index')->with('success', 'Đã thêm khoản chi thành công.');
     }
 
-    public function storeIncome(Request $request)
+    public function storeIncome(StoreIncomeRequest $request)
     {
-        $request->validate([
-            'danh_muc_id' => 'required|exists:danh_muc,id',
-            'so_tien' => 'required|numeric|min:0',
-            'ngay_nhan' => 'required|date',
-            'nguon_thu' => 'required|string',
-            'ghi_chu' => 'nullable|string',
-        ]);
 
         KhoanThu::create([
             'nguoi_dung_id' => Auth::id(),

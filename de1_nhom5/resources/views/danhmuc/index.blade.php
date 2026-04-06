@@ -89,7 +89,7 @@
 </div>
 
 <!-- Modal -->
-<div id="danhmuc-modal" class="fixed inset-0 bg-black/60 hidden backdrop-blur-sm z-50 flex items-center justify-center">
+<div id="danhmuc-modal" class="fixed inset-0 bg-black/60 {{ $errors->hasAny(['ten_danh_muc', 'loai', 'biu_tuong']) ? '' : 'hidden' }} backdrop-blur-sm z-50 flex items-center justify-center">
     <div class="bg-surface-container-lowest p-8 rounded-3xl shadow-2xl w-full max-w-md border border-outline-variant/10 relative">
         <button onclick="document.getElementById('danhmuc-modal').classList.add('hidden')" class="absolute top-4 right-4 text-outline hover:text-on-surface">
             <span class="material-symbols-outlined">close</span>
@@ -99,18 +99,27 @@
             @csrf
             <div>
                 <label class="block text-sm font-semibold mb-2">Tên danh mục</label>
-                <input type="text" name="ten_danh_muc" required class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary">
+                <input type="text" name="ten_danh_muc" value="{{ old('ten_danh_muc') }}" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('ten_danh_muc') border border-error bg-error-container/10 @enderror">
+                @error('ten_danh_muc')
+                    <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                @enderror
             </div>
             <div>
                 <label class="block text-sm font-semibold mb-2">Loại</label>
-                <select name="loai" required class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary">
-                    <option value="chi">Khoản Chi (Expense)</option>
-                    <option value="thu">Khoản Thu (Income)</option>
+                <select name="loai" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('loai') border border-error bg-error-container/10 @enderror">
+                    <option value="chi" {{ old('loai') == 'chi' ? 'selected' : '' }}>Khoản Chi (Expense)</option>
+                    <option value="thu" {{ old('loai') == 'thu' ? 'selected' : '' }}>Khoản Thu (Income)</option>
                 </select>
+                @error('loai')
+                    <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                @enderror
             </div>
             <div>
                 <label class="block text-sm font-semibold mb-2">Biểu tượng (Material Symbol Name)</label>
-                <input type="text" name="biu_tuong" required value="category" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary">
+                <input type="text" name="biu_tuong" value="{{ old('biu_tuong', 'category') }}" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('biu_tuong') border border-error bg-error-container/10 @enderror">
+                @error('biu_tuong')
+                    <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                @enderror
                 <p class="text-[10px] text-outline mt-1 italic">Vd: restaurant, commute, home, school, health_and_safety...</p>
             </div>
             <div class="pt-4">
