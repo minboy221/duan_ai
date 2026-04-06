@@ -7,13 +7,24 @@ use App\Models\GiaoDich;
 use App\Models\KhoanThu;
 use App\Models\TongKetTaiChinh;
 use App\Models\VNPay;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 
 class VNPayController extends Controller
 {
+    /**
+     * Web Demo Index - Show payment method selection
+     */
+    public function index()
+    {
+        $danhMucs = DanhMuc::where('nguoi_dung_id', Auth::id())->get();
+        return view('vnpay.index', compact('danhMucs'));
+    }
+
     /**
      * Create VNPay Payment URL
      */
@@ -26,12 +37,13 @@ class VNPayController extends Controller
         ]);
 
         $userId = Auth::id();
-        // VNPay requires time in GMT+7 (Asia/Ho_Chi_Minh)
-        $startTime = \Carbon\Carbon::now('Asia/Ho_Chi_Minh')->format('YmdHis');
-        $expire = \Carbon\Carbon::now('Asia/Ho_Chi_Minh')->addMinutes(15)->format('YmdHis');
+        $vnp_Config = config('vnpay');
+
+        $startTime = Carbon::now('Asia/Ho_Chi_Minh')->format('YmdHis');
+        $expire = Carbon::now('Asia/Ho_Chi_Minh')->addMinutes(15)->format('YmdHis');
         $orderId = 'VNP' . $userId . '_' . time();
 
-        // 1. Create VNPay Transaction record
+        // 1. Save local transaction record
         VNPay::create([
             'nguoi_dung_id' => $userId,
             'ma_don_hang' => $orderId,
@@ -39,18 +51,23 @@ class VNPayController extends Controller
             'noi_dung' => $request->noi_dung,
             'loai_giao_dich' => $request->loai_giao_dich,
             'trang_thai' => 0, // Pending
+            'vnp_create_date' => $startTime,
         ]);
 
-        // 2. Prepare VNPay parameters
-        $vnp_Config = config('vnpay');
+        // 2. Build VNPay Data
+        $ipAddress = $request->ip();
+        if (!$ipAddress || $ipAddress === '::1' || $ipAddress === '127.0.0.1') {
+            $ipAddress = '127.0.0.1';
+        }
+
         $vnp_Data = [
             "vnp_Version" => "2.1.0",
             "vnp_TmnCode" => $vnp_Config['tmn_code'],
-            "vnp_Amount" => $request->so_tien * 100, // Amount in cents
+            "vnp_Amount" => $request->so_tien * 100,
             "vnp_Command" => "pay",
             "vnp_CreateDate" => $startTime,
             "vnp_CurrCode" => "VND",
-            "vnp_IpAddr" => $request->ip(),
+            "vnp_IpAddr" => $ipAddress,
             "vnp_Locale" => "vn",
             "vnp_OrderInfo" => $request->noi_dung,
             "vnp_OrderType" => "other",
@@ -80,28 +97,24 @@ class VNPayController extends Controller
         $vnp_Url = $vnp_Config['url'] . "?" . $query;
         $vnpSecureHash = hash_hmac('sha512', $hashdata, $vnp_Config['hash_secret']);
         $vnp_Url .= 'vnp_SecureHash=' . $vnpSecureHash;
-
-        if ($request->wantsJson() || $request->is('api/*')) {
-            return response()->json([
-                'status' => 'success',
-                'payment_url' => $vnp_Url,
-                'order_id' => $orderId
-            ]);
-        }
-
         return redirect()->away($vnp_Url);
     }
 
     /**
-     * Handle VNPay IPN (Instant Payment Notification)
+     * Handle VNPay Return (Browser callback)
      */
-    public function vnpayIPN(Request $request)
+    public function vnpayReturn(Request $request)
     {
         $vnp_Config = config('vnpay');
-        $vnp_HashSecret = $vnp_Config['hash_secret'];
-        $inputData = $request->all();
-        $vnp_SecureHash = $request->vnp_SecureHash;
+        $inputData = array();
+        foreach ($request->all() as $key => $value) {
+            if (substr($key, 0, 4) == "vnp_") {
+                $inputData[$key] = $value;
+            }
+        }
         
+        $vnp_SecureHash = $request->vnp_SecureHash;
+        unset($inputData['vnp_SecureHashType']);
         unset($inputData['vnp_SecureHash']);
         ksort($inputData);
         $i = 0;
@@ -115,52 +128,61 @@ class VNPayController extends Controller
             }
         }
 
-        $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
+        $secureHash = hash_hmac('sha512', $hashData, $vnp_Config['hash_secret']);
         
-        if ($secureHash !== $vnp_SecureHash) {
-            return response()->json(["RspCode" => "97", "Message" => "Invalid Signature"]);
-        }
-
+        $status = 'error';
+        $message = 'Giao dịch không hợp lệ!';
         $orderId = $request->vnp_TxnRef;
-        $vnpayTranId = $request->vnp_TransactionNo;
-        $vnp_ResponseCode = $request->vnp_ResponseCode;
-        $vnp_Amount = $request->vnp_Amount / 100;
+
+        if ($secureHash === $vnp_SecureHash) {
+            if ($request->vnp_ResponseCode == '00') {
+                $status = 'success';
+                $message = 'Thanh toán thành công!';
+                $this->processSuccessOrder($orderId, $request->vnp_TransactionNo);
+            } else {
+                $status = 'error';
+                $message = 'Thanh toán thất bại hoặc người dùng đã hủy.';
+                VNPay::where('ma_don_hang', $orderId)->where('trang_thai', 0)->update(['trang_thai' => 2]);
+            }
+        }
 
         $vnpay = VNPay::where('ma_don_hang', $orderId)->first();
 
-        if (!$vnpay) {
-            return response()->json(["RspCode" => "01", "Message" => "Order Not Found"]);
-        }
+        return view('vnpay.result', [
+            'status' => $status,
+            'message' => $message,
+            'order_id' => $orderId,
+            'amount' => $request->vnp_Amount / 100,
+            'vnp_id' => $request->vnp_TransactionNo,
+            'vnpay' => $vnpay
+        ]);
+    }
 
-        if ($vnpay->so_tien != $vnp_Amount) {
-            return response()->json(["RspCode" => "04", "Message" => "Invalid Amount"]);
-        }
-
-        if ($vnpay->trang_thai != 0) {
-            return response()->json(["RspCode" => "02", "Message" => "Order already confirmed"]);
-        }
-
-        try {
-            DB::beginTransaction();
-
-            if ($vnp_ResponseCode == '00') {
+    /**
+     * Common logic to process successful payment
+     */
+    private function processSuccessOrder($orderId, $vnpayTranId)
+    {
+        $vnpay = VNPay::where('ma_don_hang', $orderId)->first();
+        if ($vnpay && $vnpay->trang_thai == 0) {
+            try {
+                DB::beginTransaction();
                 $vnpay->update([
                     'trang_thai' => 1,
                     'ma_giao_dich_vnpay' => $vnpayTranId
                 ]);
 
-                // 3. Sync with Ledger (KhoanThu or GiaoDich)
-                $categoryName = 'Giao dịch VNPay';
+                $isIncome = ($vnpay->loai_giao_dich == 'thu_nhap');
                 $category = DanhMuc::firstOrCreate(
                     [
                         'nguoi_dung_id' => $vnpay->nguoi_dung_id,
-                        'ten_danh_muc' => $categoryName,
-                        'loai' => ($vnpay->loai_giao_dich == 'thu_nhap') ? 'thu' : 'chi'
+                        'ten_danh_muc' => 'Thanh toán VNPay',
+                        'loai' => $isIncome ? 'thu' : 'chi'
                     ],
-                    ['biu_tuong' => 'payments']
+                    ['bieu_tuong' => 'payments']
                 );
 
-                if ($vnpay->loai_giao_dich == 'thu_nhap') {
+                if ($isIncome) {
                     KhoanThu::create([
                         'nguoi_dung_id' => $vnpay->nguoi_dung_id,
                         'danh_muc_id' => $category->id,
@@ -179,20 +201,12 @@ class VNPayController extends Controller
                     ]);
                 }
 
-                // 4. Update TongKetTaiChinh
                 $this->updateFinancialSummary($vnpay);
-
-            } else {
-                $vnpay->update(['trang_thai' => 2]);
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error('VNPay Process Order Error: ' . $e->getMessage());
             }
-
-            DB::commit();
-            return response()->json(["RspCode" => "00", "Message" => "Confirm Success"]);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('VNPay IPN Error: ' . $e->getMessage());
-            return response()->json(["RspCode" => "99", "Message" => "Internal Error"]);
         }
     }
 
@@ -200,19 +214,9 @@ class VNPayController extends Controller
     {
         $month = now()->month;
         $year = now()->year;
-
         $summary = TongKetTaiChinh::firstOrCreate(
-            [
-                'nguoi_dung_id' => $vnpay->nguoi_dung_id,
-                'thang' => $month,
-                'nam' => $year,
-            ],
-            [
-                'tong_thu' => 0,
-                'tong_chi' => 0,
-                'tong_tiet_kiem' => 0,
-                'so_tien_con_lai' => 0,
-            ]
+            ['nguoi_dung_id' => $vnpay->nguoi_dung_id, 'thang' => $month, 'nam' => $year],
+            ['tong_thu' => 0, 'tong_chi' => 0, 'tong_tiet_kiem' => 0, 'so_tien_con_lai' => 0]
         );
 
         if ($vnpay->loai_giao_dich == 'thu_nhap') {
@@ -225,109 +229,45 @@ class VNPayController extends Controller
     }
 
     /**
-     * Web Demo Index
+     * Query Transaction Status (Merchant WebAPI)
      */
-    public function index()
-    {
-        $danhMucs = DanhMuc::where('nguoi_dung_id', Auth::id())->get();
-        return view('vnpay.index', compact('danhMucs'));
-    }
-
-    /**
-     * Web Return Handler
-     */
-    public function vnpayReturn(Request $request)
+    public function queryTransaction(Request $request)
     {
         $vnp_Config = config('vnpay');
-        $vnp_HashSecret = $vnp_Config['hash_secret'];
-        $inputData = $request->all();
-        $vnp_SecureHash = $request->vnp_SecureHash;
+        $vnp_TxnRef = $request->order_id;
+        $vnp_TransactionDate = $request->trans_date; 
+        $vnp_RequestId = (string)time(); 
+        $vnp_CreateDate = date('YmdHis');
+        $ipAddr = $request->ip();
+        if (!$ipAddr || $ipAddr === '::1') $ipAddr = '127.0.0.1';
+
+        $vnp_OrderInfo = "Truy van giao dich: " . $vnp_TxnRef;
         
-        unset($inputData['vnp_SecureHash']);
-        ksort($inputData);
-        $i = 0;
-        $hashData = "";
-        foreach ($inputData as $key => $value) {
-            if ($i == 1) {
-                $hashData .= '&' . urlencode($key) . "=" . urlencode($value);
-            } else {
-                $hashData .= urlencode($key) . "=" . urlencode($value);
-                $i = 1;
-            }
+        // vnp_RequestId|vnp_Version|vnp_Command|vnp_TmnCode|vnp_TxnRef|vnp_TransactionDate|vnp_CreateDate|vnp_IpAddr|vnp_OrderInfo
+        $dataHash = $vnp_RequestId . '|2.1.0|querydr|' . $vnp_Config['tmn_code'] . '|' . $vnp_TxnRef . '|' . $vnp_TransactionDate . '|' . $vnp_CreateDate . '|' . $ipAddr . '|' . $vnp_OrderInfo;
+        $vnp_SecureHash = hash_hmac('sha512', $dataHash, $vnp_Config['hash_secret']);
+
+        $data = [
+            "vnp_RequestId" => $vnp_RequestId,
+            "vnp_Version" => "2.1.0",
+            "vnp_Command" => "querydr",
+            "vnp_TmnCode" => $vnp_Config['tmn_code'],
+            "vnp_TxnRef" => $vnp_TxnRef,
+            "vnp_OrderInfo" => $vnp_OrderInfo,
+            "vnp_TransactionDate" => $vnp_TransactionDate,
+            "vnp_CreateDate" => $vnp_CreateDate,
+            "vnp_IpAddr" => $ipAddr,
+            "vnp_SecureHash" => $vnp_SecureHash
+        ];
+
+        try {
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+            ])->post($vnp_Config['api_url'], $data);
+            
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
-
-        $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
-        $status = 'error';
-        $message = 'Giao dịch không hợp lệ!';
-
-        if ($secureHash === $vnp_SecureHash) {
-            if ($request->vnp_ResponseCode == '00') {
-                $status = 'success';
-                $message = 'Thanh toán thành công!';
-
-                // Update database if not already updated by IPN
-                $vnpay = VNPay::where('ma_don_hang', $request->vnp_TxnRef)->first();
-                if ($vnpay && $vnpay->trang_thai == 0) {
-                    try {
-                        DB::beginTransaction();
-                        $vnpay->update([
-                            'trang_thai' => 1,
-                            'ma_giao_dich_vnpay' => $request->vnp_TransactionNo
-                        ]);
-
-                        $categoryName = 'Giao dịch VNPay';
-                        $category = DanhMuc::firstOrCreate(
-                            [
-                                'nguoi_dung_id' => $vnpay->nguoi_dung_id,
-                                'ten_danh_muc' => $categoryName,
-                                'loai' => ($vnpay->loai_giao_dich == 'thu_nhap') ? 'thu' : 'chi'
-                            ],
-                            ['biu_tuong' => 'payments']
-                        );
-
-                        if ($vnpay->loai_giao_dich == 'thu_nhap') {
-                            KhoanThu::create([
-                                'nguoi_dung_id' => $vnpay->nguoi_dung_id,
-                                'danh_muc_id' => $category->id,
-                                'so_tien' => $vnpay->so_tien,
-                                'nguon_thu' => 'VNPay: ' . $vnpay->noi_dung,
-                                'ngay_nhan' => now(),
-                                'ghi_chu' => 'Mã đơn: ' . $request->vnp_TxnRef,
-                            ]);
-                        } else {
-                            GiaoDich::create([
-                                'nguoi_dung_id' => $vnpay->nguoi_dung_id,
-                                'danh_muc_id' => $category->id,
-                                'so_tien' => $vnpay->so_tien,
-                                'ghi_chu' => 'VNPay: ' . $vnpay->noi_dung . ' (Mã đơn: ' . $request->vnp_TxnRef . ')',
-                                'ngay_giao_dich' => now(),
-                            ]);
-                        }
-
-                        $this->updateFinancialSummary($vnpay);
-                        DB::commit();
-                    } catch (\Exception $e) {
-                        DB::rollBack();
-                        Log::error('VNPay Return processing error: ' . $e->getMessage());
-                    }
-                }
-
-            } else {
-                $status = 'error';
-                $message = 'Thanh toán thất bại hoặc đã bị hủy.';
-                $vnpay = VNPay::where('ma_don_hang', $request->vnp_TxnRef)->first();
-                if ($vnpay && $vnpay->trang_thai == 0) {
-                    $vnpay->update(['trang_thai' => 2]);
-                }
-            }
-        }
-
-        return view('vnpay.result', [
-            'status' => $status,
-            'message' => $message,
-            'order_id' => $request->vnp_TxnRef,
-            'amount' => $request->vnp_Amount / 100,
-            'vnp_id' => $request->vnp_TransactionNo
-        ]);
     }
 }

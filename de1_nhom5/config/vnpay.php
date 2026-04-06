@@ -6,4 +6,5 @@ return [
     'url' => env('VNP_URL', 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'),
     'return_url' => env('VNP_RETURNURL', ''),
     'ipn_url' => env('VNP_IPNURL', ''),
+    'api_url' => env('VNP_API_URL', 'https://sandbox.vnpayment.vn/merchant_webapi/api/transaction'),
 ];

@@ -136,8 +136,8 @@
                 <span class="material-symbols-outlined" {{ request()->routeIs('danhmuc.index') ? 'style=font-variation-settings:\'FILL\'1;' : '' }}>category</span>
                 Danh mục
             </a>
-            <a class="group flex items-center gap-3 px-6 py-3 text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-[#24389c] hover:bg-white/50 transition-all font-['Manrope'] text-sm font-semibold" href="#">
-                <span class="material-symbols-outlined">lock</span>
+            <a class="group flex items-center gap-3 px-6 py-3 transition-all font-['Manrope'] text-sm font-semibold {{ request()->routeIs('kho-an-toan.*') ? 'text-[#24389c] dark:text-[#3f51b5] relative before:content-[\'\'] before:absolute before:left-0 before:w-1 before:h-6 before:bg-[#24389c] before:rounded-full bg-white/40' : 'text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-[#24389c] hover:bg-white/50' }}" href="{{ route('kho-an-toan.auth') }}">
+                <span class="material-symbols-outlined" {{ request()->routeIs('kho-an-toan.*') ? 'style=font-variation-settings:\'FILL\'1;' : '' }}>lock</span>
                 Kho an toàn
             </a>
             <a class="group flex items-center gap-3 px-6 py-3 {{ request()->routeIs('huongdan') ? 'text-primary font-bold bg-primary/10' : 'text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-[#24389c] hover:bg-white/5' }} transition-all font-['Manrope'] text-sm font-semibold" href="{{ route('huongdan') }}">
