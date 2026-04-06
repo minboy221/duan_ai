@@ -100,10 +100,6 @@
                     <p class="font-['Manrope'] text-[10px] font-semibold uppercase tracking-widest text-[#24389c]/60">Elite Wealth Mgmt</p>
                 </div>
             </div>
-            <button class="w-full py-3 px-4 bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-full font-headline font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform">
-                <span class="material-symbols-outlined text-sm">add</span>
-                Add Transaction
-            </button>
         </div>
         <nav class="flex-1 space-y-1">
             <a class="group flex items-center gap-3 px-6 py-3 transition-all font-['Manrope'] text-sm font-semibold {{ request()->routeIs('dashboard') ? 'text-[#24389c] dark:text-[#3f51b5] relative before:content-[\'\'] before:absolute before:left-0 before:w-1 before:h-6 before:bg-[#24389c] before:rounded-full bg-white/40' : 'text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-[#24389c] hover:bg-white/50' }}" href="{{ route('dashboard') }}">
@@ -139,6 +135,7 @@
             <a class="group flex items-center gap-3 px-6 py-3 text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-[#24389c] hover:bg-white/50 transition-all font-['Manrope'] text-sm font-semibold" href="#">
                 <span class="material-symbols-outlined">lock</span>
                 Kho an toàn
+            </a>
             <a class="group flex items-center gap-3 px-6 py-3 {{ request()->routeIs('huongdan') ? 'text-primary font-bold bg-primary/10' : 'text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-[#24389c] hover:bg-white/5' }} transition-all font-['Manrope'] text-sm font-semibold" href="{{ route('huongdan') }}">
                 <span class="material-symbols-outlined" {{ request()->routeIs('huongdan') ? 'style=font-variation-settings:\'FILL\'1;' : '' }}>help_outline</span>
                 Hướng dẫn SD
