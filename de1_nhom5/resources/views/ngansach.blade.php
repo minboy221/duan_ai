@@ -16,12 +16,12 @@
         <div class="bg-surface-container-low p-6 rounded-full flex items-center gap-8">
             <div>
                 <p class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Tổng ngân sách tháng</p>
-                <p class="text-2xl font-extrabold tabular-nums">312.000.000 VNĐ</p>
+                <p class="text-2xl font-extrabold tabular-nums">{{ Auth::check() ? '312.000.000' : '0' }} VNĐ</p>
             </div>
             <div class="h-10 w-[1px] bg-slate-300"></div>
             <div>
                 <p class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Mức độ sử dụng</p>
-                <p class="text-2xl font-extrabold tabular-nums text-secondary">64%</p>
+                <p class="text-2xl font-extrabold tabular-nums text-secondary">{{ Auth::check() ? '64%' : '0%' }}</p>
             </div>
         </div>
     </section>
@@ -45,7 +45,7 @@
                         <span class="text-xs font-bold text-secondary uppercase tracking-wider">Bền vững</span>
                     </div>
                     <h5 class="text-lg font-bold mb-1">Ẩm thực & Thực phẩm</h5>
-                    <p class="text-3xl font-extrabold tabular-nums mb-4">21.050.000<span class="text-base font-medium text-slate-400"> / 30.000.000 VNĐ</span></p>
+                    <p class="text-3xl font-extrabold tabular-nums mb-4">{{ Auth::check() ? '21.050.000' : '0' }}<span class="text-base font-medium text-slate-400"> / {{ Auth::check() ? '30.000.000' : '0' }} VNĐ</span></p>
                 </div>
                 <div class="relative z-10">
                     <div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden">
@@ -64,7 +64,7 @@
                         <span class="text-xs font-bold text-tertiary uppercase tracking-wider italic">Cần lưu ý</span>
                     </div>
                     <h5 class="text-lg font-bold mb-1">Giải trí & Lối sống</h5>
-                    <p class="text-3xl font-extrabold tabular-nums mb-4">47.250.000<span class="text-base font-medium text-slate-400"> / 50.000.000 VNĐ</span></p>
+                    <p class="text-3xl font-extrabold tabular-nums mb-4">{{ Auth::check() ? '47.250.000' : '0' }}<span class="text-base font-medium text-slate-400"> / {{ Auth::check() ? '50.000.000' : '0' }} VNĐ</span></p>
                 </div>
                 <div class="relative z-10">
                     <div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden">
@@ -83,7 +83,7 @@
                         <span class="text-xs font-bold text-primary uppercase tracking-wider">Chi phí cố định</span>
                     </div>
                     <h5 class="text-lg font-bold mb-1">Nhà ở & Tiện ích</h5>
-                    <p class="text-3xl font-extrabold tabular-nums mb-4">10.500.000<span class="text-base font-medium text-slate-400"> / 21.000.000 VNĐ</span></p>
+                    <p class="text-3xl font-extrabold tabular-nums mb-4">{{ Auth::check() ? '10.500.000' : '0' }}<span class="text-base font-medium text-slate-400"> / {{ Auth::check() ? '21.000.000' : '0' }} VNĐ</span></p>
                 </div>
                 <div class="relative z-10">
                     <div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden">
@@ -114,7 +114,7 @@
                             <div>
                                 <div class="flex justify-between text-xs font-bold uppercase mb-2">
                                     <span class="text-slate-500">Đã tích lũy</span>
-                                    <span class="text-on-surface">3.625M / 11.250M VNĐ</span>
+                                    <span class="text-on-surface">{{ Auth::check() ? '3.625M / 11.250M' : '0' }} VNĐ</span>
                                 </div>
                                 <div class="h-3 w-full bg-surface-container-low rounded-full">
                                     <div class="h-full bg-gradient-to-r from-primary to-primary-container rounded-full" style="width: 32.2%;"></div>
@@ -127,7 +127,7 @@
                                 </div>
                                 <div class="bg-surface-container-low p-4 rounded-full">
                                     <p class="text-[10px] font-bold text-slate-500 uppercase">Tốc độ hàng ngày</p>
-                                    <p class="text-base font-bold tabular-nums text-secondary">7.100.000 VNĐ</p>
+                                    <p class="text-base font-bold tabular-nums text-secondary">{{ Auth::check() ? '7.100.000' : '0' }} VNĐ</p>
                                 </div>
                             </div>
                         </div>
@@ -155,8 +155,8 @@
                     </div>
                     <div class="flex justify-between items-end mb-4">
                         <div>
-                            <p class="text-2xl font-extrabold tabular-nums">1.560.000.000 VNĐ</p>
-                            <p class="text-[10px] font-bold text-slate-400 uppercase">Mục tiêu: 1.875.000.000 VNĐ</p>
+                            <p class="text-2xl font-extrabold tabular-nums">{{ Auth::check() ? '1.560.000.000' : '0' }} VNĐ</p>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase">Mục tiêu: {{ Auth::check() ? '1.875.000.000' : '0' }} VNĐ</p>
                         </div>
                         <div class="text-right">
                             <p class="text-sm font-bold text-secondary">+10.500.000 / tuần</p>
