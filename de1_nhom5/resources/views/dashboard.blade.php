@@ -119,6 +119,29 @@
             </div>
         </div>
 
+        <!-- Chart: Expense Comparison -->
+        <div class="md:col-span-2 lg:col-span-3 bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/10 shadow-sm flex flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-lg font-bold">Biến động Chi tiêu</h3>
+                    <p class="text-xs text-outline mt-1">So sánh mức chi tiêu mỗi ngày giữa tháng này và tháng trước</p>
+                </div>
+                <div class="flex gap-4">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-tertiary"></span>
+                        <span class="text-xs text-outline font-medium">Tháng này</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-outline-variant/60"></span>
+                        <span class="text-xs text-outline font-medium">Tháng trước</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 w-full relative" style="min-height: 250px;">
+                <canvas id="comparisonChart"></canvas>
+            </div>
+        </div>
+
         <!-- Audit Log (Recent Activity) -->
         <div class="lg:col-span-2 bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/10 shadow-sm">
             <div class="flex justify-between items-center mb-8">
@@ -363,6 +386,71 @@
                     aiInsightsContent.innerHTML = `<div class="text-sm text-red-200">Lỗi: ${error.message}</div>`;
                     btnAnalyzeAi.innerHTML = originalBtnText;
                     btnAnalyzeAi.disabled = false;
+                }
+            });
+        }
+
+        const compCtx = document.getElementById('comparisonChart')?.getContext('2d');
+        if (compCtx) {
+            new Chart(compCtx, {
+                type: 'line',
+                data: {
+                    labels: {!! json_encode($monthDaysLabels) !!},
+                    datasets: [
+                        {
+                            label: 'Tháng này',
+                            data: {!! json_encode($thisMonthValues) !!},
+                            borderColor: '#8a0027',
+                            backgroundColor: 'rgba(138, 0, 39, 0.05)',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: '#8a0027',
+                            pointRadius: 3
+                        },
+                        {
+                            label: 'Tháng trước',
+                            data: {!! json_encode($lastMonthValues) !!},
+                            borderColor: '#cbd5e1',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            tension: 0.4,
+                            fill: false,
+                            pointBackgroundColor: '#cbd5e1',
+                            pointRadius: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { 
+                            backgroundColor: '#131b2e', 
+                            padding: 12,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#757684' } },
+                        y: { 
+                            grid: { color: 'rgba(117, 118, 132, 0.1)', borderDash: [4, 4] },
+                            ticks: { font: { size: 10 }, color: '#757684', callback: (value) => (value / 1000000) + 'M' }
+                        }
+                    }
                 }
             });
         }

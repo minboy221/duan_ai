@@ -10,7 +10,13 @@
             <h2 class="text-3xl font-extrabold tracking-tight text-on-surface">Lịch sử Giao dịch</h2>
             <p class="text-outline text-sm mt-1">Quản lý thu nhập và chi tiêu của bạn</p>
         </div>
-        <div class="flex gap-4">
+        <div class="flex flex-wrap gap-3 justify-end">
+            <button onclick="document.getElementById('import-excel-modal').classList.remove('hidden')" class="bg-surface-container-high text-on-surface px-4 py-2.5 rounded-xl font-bold shadow-sm border border-outline-variant/20 hover:bg-surface-container-highest transition-all flex items-center gap-2">
+                <span class="material-symbols-outlined text-green-600" data-icon="upload_file">upload_file</span> Nhập Excel
+            </button>
+            <a href="{{ route('transactions.export') }}" class="bg-surface-container-high text-on-surface px-4 py-2.5 rounded-xl font-bold shadow-sm border border-outline-variant/20 hover:bg-surface-container-highest transition-all flex items-center gap-2">
+                <span class="material-symbols-outlined text-green-600" data-icon="download">download</span> Xuất Excel
+            </a>
             <button onclick="document.getElementById('income-modal').classList.remove('hidden')" class="bg-secondary text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg hover:bg-secondary/90 transition-all flex items-center gap-2">
                 <span class="material-symbols-outlined" data-icon="add_circle">add_circle</span> Thêm khoản Thu
             </button>
@@ -130,7 +136,7 @@
             </div>
             <div>
                 <label class="block text-sm font-semibold mb-2">Ngày nhận</label>
-                <input type="date" name="ngay_nhan" value="{{ old('ngay_nhan', date('Y-m-d')) }}" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('ngay_nhan') border border-error bg-error-container/10 @enderror">
+                <input type="date" name="ngay_nhan" min="{{ date('Y-m-d') }}" value="{{ old('ngay_nhan', date('Y-m-d')) }}" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('ngay_nhan') border border-error bg-error-container/10 @enderror">
                 @error('ngay_nhan')
                     <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
                 @enderror
@@ -182,13 +188,45 @@
             </div>
             <div>
                 <label class="block text-sm font-semibold mb-2">Ngày giao dịch</label>
-                <input type="date" name="ngay_giao_dich" value="{{ old('ngay_giao_dich', date('Y-m-d')) }}" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('ngay_giao_dich') border border-error bg-error-container/10 @enderror">
+                <input type="date" name="ngay_giao_dich" min="{{ date('Y-m-d') }}" value="{{ old('ngay_giao_dich', date('Y-m-d')) }}" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('ngay_giao_dich') border border-error bg-error-container/10 @enderror">
                 @error('ngay_giao_dich')
                     <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
                 @enderror
             </div>
             <div class="pt-4">
                 <button type="submit" class="w-full bg-tertiary text-white py-3 rounded-xl font-bold shadow-lg hover:bg-tertiary/90 transition-all">Lưu Khoản Chi</button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- Modal: Import Excel -->
+<div id="import-excel-modal" class="fixed inset-0 bg-black/60 hidden backdrop-blur-sm z-50 flex items-center justify-center">
+    <div class="bg-surface-container-lowest p-8 rounded-3xl shadow-2xl w-full max-w-md border border-outline-variant/10 relative">
+        <button onclick="document.getElementById('import-excel-modal').classList.add('hidden')" class="absolute top-4 right-4 text-outline hover:text-on-surface">
+            <span class="material-symbols-outlined" data-icon="close">close</span>
+        </button>
+        <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 bg-green-100 text-green-600 rounded-xl flex items-center justify-center">
+                <span class="material-symbols-outlined" data-icon="upload_file">upload_file</span>
+            </div>
+            <h3 class="text-xl font-bold text-on-surface">Nhập Excel Hàng Loạt</h3>
+        </div>
+        
+        <div class="bg-surface-container-low p-4 rounded-xl mb-6 text-sm text-outline border border-outline-variant/20">
+            <p>Tải lên file Excel (.xlsx, .csv) chứa danh sách thu chi. Các danh mục chưa có sẽ được <strong>tự động tạo mới</strong>.</p>
+            <a href="{{ route('transactions.export') }}" class="text-primary font-bold hover:underline mt-2 inline-block">Tải file mẫu (Export file hiện tại)</a>
+        </div>
+
+        <form method="POST" action="{{ route('transactions.import') }}" enctype="multipart/form-data" class="space-y-4">
+            @csrf
+            <div>
+                <label class="block text-sm font-semibold mb-2">Chọn file upload</label>
+                <input type="file" name="file" accept=".xlsx, .xls, .csv" required class="w-full bg-surface-container-low border border-dashed border-outline-variant/50 rounded-xl px-4 py-8 focus:ring-2 focus:ring-primary text-center file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer">
+            </div>
+            <div class="pt-4">
+                <button type="submit" class="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-lg hover:bg-primary/90 transition-all flex justify-center items-center gap-2">
+                    <span class="material-symbols-outlined" data-icon="cloud_upload">cloud_upload</span> Bắt đầu Nhập
+                </button>
             </div>
         </form>
     </div>
