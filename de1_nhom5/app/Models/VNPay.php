@@ -19,6 +19,7 @@ class VNPay extends Model
         'ma_giao_dich_vnpay',
         'loai_giao_dich',
         'trang_thai',
+        'vnp_create_date',
     ];
 
     public function nguoiDung()

@@ -1,141 +1,154 @@
 @extends('layouts.app')
 
-@section('title', 'VNPay Sandbox Demo')
+@section('title', 'Nạp tiền qua VNPay')
 
 @section('content')
-<div class="max-w-4xl mx-auto">
-    <!-- Header Section -->
-    <div class="mb-10 text-center">
-        <div class="inline-flex items-center justify-center w-20 h-20 bg-primary/10 rounded-3xl mb-4">
-            <span class="material-symbols-outlined text-4xl text-primary" data-icon="payments">payments</span>
-        </div>
-        <h2 class="text-4xl font-black tracking-tight text-on-surface">Cổng thanh toán VNPay</h2>
-        <p class="text-outline text-lg mt-2">Trải nghiệm thanh toán an toàn và nhanh chóng qua môi trường Sandbox</p>
+<div class="max-w-4xl mx-auto py-12 px-4">
+    <div class="text-center mb-12">
+        <h1 class="text-4xl font-black text-on-surface mb-4">Thanh toán VNPay</h1>
+        <p class="text-outline text-lg">Chọn số tiền và phương thức thanh toán của bạn</p>
     </div>
 
-    <!-- Alert for Sandbox -->
-    <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-2xl mb-10 shadow-sm">
-        <div class="flex items-start">
-            <div class="flex-shrink-0">
-                <span class="material-symbols-outlined text-blue-500" data-icon="info">info</span>
-            </div>
-            <div class="ml-4">
-                <h4 class="text-lg font-bold text-blue-800">Thông tin thử nghiệm</h4>
-                <p class="text-blue-700 mt-1">Dùng thẻ nội địa bên dưới để test thành công:</p>
-                <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2 text-sm font-mono text-blue-900 bg-white/50 p-4 rounded-xl">
-                    <div>Số thẻ: <span class="font-bold">970419852137142015</span></div>
-                    <div>Tên: <span class="font-bold">NGUYEN VAN A</span></div>
-                    <div>Ngày: <span class="font-bold">07/15</span></div>
-                    <div>OTP: <span class="font-bold">123456</span></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Payment Form -->
-    <div class="bg-surface-container-lowest rounded-3xl border border-outline-variant/10 shadow-xl overflow-hidden">
-        <form action="{{ route('vnpay.pay') }}" method="POST" id="vnpay-form">
-            @csrf
-            
-            <div class="p-8 space-y-8">
-                <!-- Select Type -->
-                <div>
-                    <label class="block text-sm font-bold text-outline uppercase tracking-widest mb-4">Loại giao dịch</label>
-                    <div class="grid grid-cols-2 gap-6">
-                        <label class="relative group cursor-pointer">
-                            <input type="radio" name="loai_giao_dich" value="thu_nhap" checked class="peer sr-only">
-                            <div class="p-6 rounded-2xl border-2 border-outline-variant/20 bg-surface-container-low transition-all peer-checked:border-secondary peer-checked:bg-secondary/5 group-hover:bg-surface-container">
-                                <div class="flex items-center gap-4">
-                                    <div class="w-12 h-12 rounded-full bg-secondary/10 text-secondary flex items-center justify-center">
-                                        <span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
-                                    </div>
-                                    <div>
-                                        <div class="font-bold text-lg">Nạp tiền</div>
-                                        <div class="text-xs text-outline italic">Tăng số dư tài khoản</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </label>
-                        <label class="relative group cursor-pointer">
-                            <input type="radio" name="loai_giao_dich" value="chi_tieu" class="peer sr-only">
-                            <div class="p-6 rounded-2xl border-2 border-outline-variant/20 bg-surface-container-low transition-all peer-checked:border-tertiary peer-checked:bg-tertiary/5 group-hover:bg-surface-container">
-                                <div class="flex items-center gap-4">
-                                    <div class="w-12 h-12 rounded-full bg-tertiary/10 text-tertiary flex items-center justify-center">
-                                        <span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
-                                    </div>
-                                    <div>
-                                        <div class="font-bold text-lg">Thanh toán</div>
-                                        <div class="text-xs text-outline italic">Chi trả hóa đơn</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Input Amount and Description -->
-                <!-- Input Fields -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="space-y-6">
-                        <div class="space-y-2">
-                            <label class="block text-sm font-bold text-outline uppercase tracking-widest mb-2">Số tiền thanh toán (VNĐ)</label>
-                            <div class="relative">
-                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-outline font-bold">₫</span>
-                                <input type="text" name="so_tien" value="50,000" class="money-input w-full bg-surface-container-low border-none rounded-2xl pl-10 pr-4 py-4 text-2xl font-black focus:ring-2 focus:ring-primary text-on-surface" placeholder="0">
-                            </div>
-                            <p class="text-xs text-outline">Tối thiểu 1,000 VNĐ</p>
+    <form action="{{ route('vnpay.pay') }}" method="POST" id="vnpay-form" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        @csrf
+        
+        <!-- Left: Form Inputs -->
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-surface-container-lowest rounded-[32px] p-8 border border-outline-variant/10 shadow-xl">
+                <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">payments</span> Thông tin giao dịch
+                </h3>
+                
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-bold text-outline mb-2 uppercase tracking-widest">Số tiền (VNĐ)</label>
+                        <div class="relative group">
+                            <input type="number" name="so_tien" id="so_tien" value="50000" min="1000" required
+                                class="w-full bg-surface-container text-2xl font-black p-6 rounded-2xl border-2 border-transparent focus:border-primary focus:bg-surface transition-all outline-none">
+                            <div class="absolute right-6 top-1/2 -translate-y-1/2 text-outline font-bold">VND</div>
                         </div>
-                        
-                        <div class="space-y-2">
-                            <label class="block text-sm font-bold text-outline uppercase tracking-widest mb-2">Chọn Ngân hàng / Phương thức</label>
-                            <select name="bank_code" class="w-full bg-surface-container-low border-none rounded-2xl px-4 py-4 focus:ring-2 focus:ring-primary text-on-surface font-semibold">
-                                <option value="">--- Trực tiếp tại VNPay ---</option>
-                                <option value="NCB">Ngân hàng NCB (Thẻ nội địa)</option>
-                                <option value="VNPAYQR">Thanh toán quét mã VNPAYQR</option>
-                                <option value="INTCARD">Thẻ thanh toán quốc tế</option>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-outline mb-2 uppercase tracking-widest">Nội dung thanh toán</label>
+                        <input type="text" name="noi_dung" value="Nap tien vao tai khoan" required
+                            class="w-full bg-surface-container p-4 rounded-2xl border-2 border-transparent focus:border-primary focus:bg-surface transition-all outline-none font-medium">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-bold text-outline mb-2 uppercase tracking-widest">Loại giao dịch</label>
+                            <select name="loai_giao_dich" class="w-full bg-surface-container p-4 rounded-2xl border-2 border-transparent focus:border-primary focus:bg-surface transition-all outline-none font-medium appearance-none">
+                                <option value="thu_nhap">Thu nhập / Nạp tiền</option>
+                                <option value="chi_tieu">Chi tiêu / Thanh toán</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-outline mb-2 uppercase tracking-widest">Ngôn ngữ</label>
+                            <select name="language" class="w-full bg-surface-container p-4 rounded-2xl border-2 border-transparent focus:border-primary focus:bg-surface transition-all outline-none font-medium appearance-none">
+                                <option value="vn">Tiếng Việt</option>
+                                <option value="en">English</option>
                             </select>
                         </div>
                     </div>
-
-                    <div class="space-y-2">
-                        <label class="block text-sm font-bold text-outline uppercase tracking-widest mb-2">Nội dung đơn hàng</label>
-                        <textarea name="noi_dung" rows="5" class="w-full h-full bg-surface-container-low border-none rounded-2xl px-4 py-4 focus:ring-2 focus:ring-primary resize-none" placeholder="Ghi chú thanh toán...">Nạp tiền vào tài khoản Fiscal Curator</textarea>
-                    </div>
                 </div>
             </div>
 
-            <!-- Footer Action -->
-            <div class="bg-surface-container-low p-8 border-t border-outline-variant/10">
-                <button type="submit" class="w-full bg-primary text-white py-5 rounded-2xl text-xl font-black shadow-2xl hover:shadow-primary/50 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3">
-                    Xác nhận thanh toán qua VNPay
-                    <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+            <!-- Payment Methods Grid -->
+            <div class="bg-surface-container-lowest rounded-[32px] p-8 border border-outline-variant/10 shadow-xl">
+                <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">account_balance</span> Chọn phương thức thanh toán
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Method: VNPAYQR -->
+                    <label class="relative cursor-pointer group">
+                        <input type="radio" name="bank_code" value="" class="peer hidden" checked>
+                        <div class="h-full p-6 rounded-2xl border-2 border-outline-variant/20 bg-surface group-hover:border-primary/50 peer-checked:border-primary peer-checked:bg-primary/5 transition-all text-center">
+                            <div class="w-12 h-12 bg-white rounded-xl shadow-md flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                                <img src="https://sandbox.vnpayment.vn/paymentv2/Images/brands/logo-vnpayqr.svg" alt="VNPAY-QR" class="w-8">
+                            </div>
+                            <div class="font-bold text-sm">VNPAY-QR</div>
+                            <div class="text-[10px] text-outline mt-1 uppercase tracking-tighter">Ứng dụng Ngân hàng</div>
+                        </div>
+                    </label>
+
+                    <!-- Method: ATM (NCB) -->
+                    <label class="relative cursor-pointer group">
+                        <input type="radio" name="bank_code" value="NCB" class="peer hidden">
+                        <div class="h-full p-6 rounded-2xl border-2 border-outline-variant/20 bg-surface group-hover:border-primary/50 peer-checked:border-primary peer-checked:bg-primary/5 transition-all text-center">
+                            <div class="w-12 h-12 bg-white rounded-xl shadow-md flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                                <span class="material-symbols-outlined text-primary text-3xl">credit_card</span>
+                            </div>
+                            <div class="font-bold text-sm">Thẻ ATM / Tài khoản</div>
+                            <div class="text-[10px] text-outline mt-1 uppercase tracking-tighter">Ngân hàng nội địa</div>
+                        </div>
+                    </label>
+
+                    <!-- Method: INTCARD -->
+                    <label class="relative cursor-pointer group">
+                        <input type="radio" name="bank_code" value="VISA" class="peer hidden">
+                        <div class="h-full p-6 rounded-2xl border-2 border-outline-variant/20 bg-surface group-hover:border-primary/50 peer-checked:border-primary peer-checked:bg-primary/5 transition-all text-center">
+                            <div class="w-12 h-12 bg-white rounded-xl shadow-md flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                                <span class="material-symbols-outlined text-primary text-3xl">public</span>
+                            </div>
+                            <div class="font-bold text-sm">Thẻ quốc tế</div>
+                            <div class="text-[10px] text-outline mt-1 uppercase tracking-tighter">Visa, Mastercard, JCB</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Summary & Pay -->
+        <div class="space-y-6">
+            <div class="bg-primary text-white rounded-[40px] p-8 shadow-2xl relative overflow-hidden group">
+                <div class="absolute -right-4 -top-4 w-32 h-32 bg-white/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
+                
+                <h3 class="text-lg font-bold mb-8 opacity-80 uppercase tracking-widest">Tổng thanh toán</h3>
+                <div class="mb-8">
+                    <div class="text-5xl font-black mb-2" id="display-amount">50.000</div>
+                    <div class="text-sm font-bold opacity-60">VND</div>
+                </div>
+
+                <ul class="space-y-4 mb-10 opacity-80 text-sm">
+                    <li class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">check_circle</span> Phí giao dịch: 0đ</li>
+                    <li class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">check_circle</span> Xử lý tức thì</li>
+                    <li class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">check_circle</span> Bảo mật 256-bit</li>
+                </ul>
+
+                <button type="submit" class="w-full bg-white text-primary py-5 rounded-2xl font-black text-lg hover:shadow-xl hover:scale-[1.02] flex items-center justify-center gap-3 active:scale-95 transition-all">
+                    THANH TOÁN NGAY <span class="material-symbols-outlined">trending_flat</span>
                 </button>
-                <div class="mt-4 flex items-center justify-center gap-6 grayscale opacity-50">
-                    <img src="https://sandbox.vnpayment.vn/paymentv2/images/img/logos/vnpay-logo.png" alt="VNPay" class="h-8">
-                </div>
             </div>
-        </form>
-    </div>
+
+            <div class="bg-surface-container-high/30 rounded-3xl p-6 text-center border border-dashed border-outline-variant/30">
+                <img src="https://sandbox.vnpayment.vn/paymentv2/Images/brands/logo-vnpay.svg" alt="VNPay Logo" class="h-8 mx-auto opacity-50 mb-4 grayscale">
+                <p class="text-[10px] text-outline leading-relaxed uppercase tracking-tighter font-bold">
+                    Dịch vụ được cung cấp bởi VNPAY. <br> Thông tin giao dịch của bạn được bảo mật tuyệt đối.
+                </p>
+            </div>
+        </div>
+    </form>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('vnpay-form');
-    form.addEventListener('submit', function(e) {
-        // We already have a global stripCommas in app.blade.php
-        // but let's ensure it works for this web form redirect too.
-        const moneyInput = form.querySelector('.money-input');
-        if (moneyInput) {
-            moneyInput.value = moneyInput.value.replace(/,/g, '');
+    const inputAmount = document.getElementById('so_tien');
+    const displayAmount = document.getElementById('display-amount');
+
+    inputAmount.addEventListener('input', (e) => {
+        let val = e.target.value;
+        if (val) {
+            displayAmount.innerText = new Intl.NumberFormat('vi-VN').format(val);
+        } else {
+            displayAmount.innerText = '0';
         }
     });
-
-    // Auto resize textarea
-    const textarea = document.querySelector('textarea');
-    textarea.addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = (this.scrollHeight) + 'px';
-    });
-});
 </script>
+
+<style>
+    .bg-surface-container-lowest { background-color: #ffffff; }
+    .bg-surface-container { background-color: #f3f4f6; }
+    .text-outline { color: #6b7280; }
+</style>
 @endsection

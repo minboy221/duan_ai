@@ -10,6 +10,8 @@ use App\Http\Controllers\DanhMucController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\KhoAnToanController;
+use App\Http\Controllers\VNPayController;
+use App\Http\Controllers\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -81,15 +83,18 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/password/verify', [ProfileController::class, 'verifyPasswordOtp'])->name('profile.password.verify.post');
 
     // Notifications
-    Route::get('/thong-bao', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
-    Route::post('/thong-bao/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.read');
-    Route::post('/thong-bao/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
-    Route::delete('/thong-bao/{id}', [\App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
+    Route::get('/thong-bao', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/thong-bao/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/thong-bao/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+    Route::delete('/thong-bao/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
 
     // VNPay Demo
-    Route::get('/vnpay', [\App\Http\Controllers\VNPayController::class, 'index'])->name('vnpay.index');
-    Route::post('/vnpay/pay', [\App\Http\Controllers\VNPayController::class, 'createPayment'])->name('vnpay.pay');
-    Route::get('/vnpay/return', [\App\Http\Controllers\VNPayController::class, 'vnpayReturn'])->name('vnpay.return');
+    Route::group(['prefix' => 'vnpay', 'as' => 'vnpay.'], function () {
+        Route::get('/', [VNPayController::class, 'index'])->name('index');
+        Route::post('/pay', [VNPayController::class, 'createPayment'])->name('pay');
+        Route::get('/return', [VNPayController::class, 'vnpayReturn'])->name('return');
+        Route::get('/query', [VNPayController::class, 'queryTransaction'])->name('query');
+    });
 
     // Safe Vault (Kho An Toan)
     Route::group(['prefix' => 'kho-an-toan', 'as' => 'kho-an-toan.'], function () {
