@@ -156,18 +156,18 @@
                     <button class="p-2 rounded-full hover:bg-[#f1efff] dark:hover:bg-[#1e273d] transition-colors cursor-pointer active:opacity-80">
                         <span class="material-symbols-outlined text-on-surface-variant">notifications</span>
                     </button>
-                    <button class="p-2 rounded-full hover:bg-[#f1efff] dark:hover:bg-[#1e273d] transition-colors cursor-pointer active:opacity-80">
+                    <a href="{{ route('profile.edit') }}" class="p-2 rounded-full hover:bg-[#f1efff] dark:hover:bg-[#1e273d] transition-colors cursor-pointer active:opacity-80 flex items-center justify-center">
                         <span class="material-symbols-outlined text-on-surface-variant">settings</span>
-                    </button>
+                    </a>
                 </div>
                 <div class="h-8 w-[1px] bg-outline-variant/30 mx-2"></div>
-                <div class="flex items-center gap-3">
+                <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity group">
                     <div class="text-right hidden sm:block">
-                        <p class="text-xs font-bold text-on-surface">{{ Auth::check() ? Auth::user()->ho_ten : 'Khách' }}</p>
+                        <p class="text-xs font-bold text-on-surface group-hover:text-primary transition-colors">{{ Auth::check() ? Auth::user()->ho_ten : 'Khách' }}</p>
                         <p class="text-[10px] text-on-surface-variant">Thành viên</p>
                     </div>
-                    <img alt="User profile" class="w-10 h-10 rounded-full object-cover border-2 border-primary-fixed" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8Bl3zltjNmW2TecOpEh6CAsni8U_bWOA9Z-7nRV8VXE3TvaxvKErkXo7ogLxx549qw0EsGdm5wVsMM9HWiuK4IQJIV3RNLz9FYEzdgAmhv0FuJpLXZJ9PoSAwKYXlYDg7nFOUQ6ZvAR7bWih7fIdJ7CEuwsPOYyrGQ9z-5MSAFGtEQtsLCo5rejfAKGXxQEMx_JTnuvsMZDTWeI2Y_jpG-XNYfoGf816ohYMjBxJOjmZGQHeJfxv_y1gbWbDG9RcSUqMH2bZgpzE"/>
-                </div>
+                    <img alt="User profile" class="w-10 h-10 rounded-full object-cover border-2 border-primary-fixed shadow-sm" src="{{ Auth::check() && Auth::user()->anh_dai_dien ? asset('storage/' . Auth::user()->anh_dai_dien) : 'https://lh3.googleusercontent.com/aida-public/AB6AXuA626iML8Eg0T0FDI2y9Tg9PHrbfMc12buaZYXBAYhPh6vpJzY3op19-kt6OW8wLRTi7V1qepL0biFk51eW_fVjg4ZUg7qs3QPXCbRyCbLaHPTWFH1AI2KJvd5wfwl6qRfBhHmqH4CkcRjWf6GWg4RYj9j_I4QUxg1J0TkWb1K-TkipH1OuAlWBljHRu3mI9BZTa4oGGRIIivvi_W7k0vZ9Q49vtgJFNkLd9vbx_6Nsae2ILriiw8XTbWa7imtVUbrwhjIl8017jN0' }}"/>
+                </a>
             </div>
         </header>
 
