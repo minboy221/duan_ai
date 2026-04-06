@@ -111,13 +111,18 @@ class KhoAnToanController extends Controller
                     return back()->with('error', 'Số dư tài khoản chính không đủ.');
                 }
 
+                $danhMucChi = \App\Models\DanhMuc::firstOrCreate(
+                    ['nguoi_dung_id' => $user->id, 'ten_danh_muc' => 'Chi phí khẩn cấp', 'loai' => 'chi'],
+                    ['bieu_tuong' => 'health_and_safety']
+                );
+
                 // Record as Expense to reduce main balance
                 GiaoDich::create([
                     'nguoi_dung_id' => $user->id,
                     'so_tien' => $amount,
                     'ghi_chu' => 'Chuyển tiền vào Kho an toàn',
                     'ngay_giao_dich' => Carbon::now(),
-                    'danh_muc_id' => 1, // Will create/assign a special category later or use 1 for now
+                    'danh_muc_id' => $danhMucChi->id,
                 ]);
 
                 $user->increment('so_du_kho_an_toan', $amount);
@@ -129,13 +134,18 @@ class KhoAnToanController extends Controller
                     return back()->with('error', 'Số dư Kho an toàn không đủ.');
                 }
 
+                $danhMucThu = \App\Models\DanhMuc::firstOrCreate(
+                    ['nguoi_dung_id' => $user->id, 'ten_danh_muc' => 'Chi phí khẩn cấp', 'loai' => 'thu'],
+                    ['biu_tuong' => 'health_and_safety']
+                );
+
                 // Record as Income to increase main balance
                 KhoanThu::create([
                     'nguoi_dung_id' => $user->id,
                     'so_tien' => $amount,
                     'nguon_thu' => 'Rút tiền từ Kho an toàn',
                     'ngay_nhan' => Carbon::now(),
-                    'danh_muc_id' => 1,
+                    'danh_muc_id' => $danhMucThu->id,
                 ]);
 
                 $user->decrement('so_du_kho_an_toan', $amount);

@@ -75,6 +75,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/danh-muc', [DanhMucController::class, 'store'])->name('danhmuc.store');
     Route::delete('/danh-muc/{id}', [DanhMucController::class, 'destroy'])->name('danhmuc.destroy');
     
+    // Phân Tích AI
+    Route::post('/ai/phan-tich', [\App\Http\Controllers\AiAnalysisController::class, 'analyzeHabits'])->name('ai.phan_tich');
+    
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');

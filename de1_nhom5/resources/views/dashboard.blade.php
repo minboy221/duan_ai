@@ -193,32 +193,37 @@
         </div>
 
         <!-- AI Insights Card -->
-        <div class="bg-primary text-on-primary rounded-2xl p-8 relative overflow-hidden flex flex-col justify-between shadow-xl">
+        <div class="bg-primary text-on-primary rounded-2xl p-8 relative overflow-hidden flex flex-col justify-between shadow-xl" id="aiInsightsCard">
             <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
-            <div class="relative z-10 text-left">
+            <div class="relative z-10 text-left h-full flex flex-col">
                 <div class="w-10 h-10 bg-white/20 backdrop-blur-md rounded-lg flex items-center justify-center mb-6">
                     <span class="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
                 </div>
-                <h4 class="text-xl font-bold mb-4">Gợi ý từ Curator AI</h4>
-                @if($savingsRate < 20 && $monthlyIncome > 0)
-                    <p class="text-sm text-on-primary/80 leading-relaxed mb-6">
-                        Tỷ lệ tiết kiệm tháng này của bạn đang ở mức <span class="font-bold text-white">{{ $savingsRate }}%</span>. 
-                        Hãy thử cắt giảm 10% chi tiêu cho <span class="font-bold text-white">{{ $categoryData->first()->danhMuc->ten_danh_muc ?? 'các danh mục' }}</span> để tối ưu hoá ngân sách.
-                    </p>
-                @elseif($savingsRate >= 20)
-                    <p class="text-sm text-on-primary/80 leading-relaxed mb-6">
-                        Tuyệt vời! Bạn đã tiết kiệm được <span class="font-bold text-white">{{ $savingsRate }}%</span> thu nhập. 
-                        Bạn có muốn thiết lập một biểu đồ mục tiêu tích luỹ mới cho kỳ nghỉ tiếp theo không?
-                    </p>
-                @else
-                    <p class="text-sm text-on-primary/80 leading-relaxed mb-6">
-                        Bắt đầu ghi lại các giao dịch của bạn để Curator AI có thể phân tích và đưa ra những gợi ý tài chính thông minh nhất cho bạn.
-                    </p>
-                @endif
+                <h4 class="text-xl font-bold mb-4">Phân Tích Thói Quen Tiêu Dùng</h4>
+                <div id="aiInsightsContent" class="overflow-y-auto pr-2 max-h-[300px] text-sm text-on-primary/90 leading-relaxed mb-6 font-medium">
+                    @if($savingsRate < 20 && $monthlyIncome > 0)
+                        <p class="mb-4 text-on-primary/80">
+                            Tỷ lệ tiết kiệm tháng này của bạn đang ở mức <span class="font-bold text-white">{{ $savingsRate }}%</span>. 
+                            Hãy thử cắt giảm chi tiêu cho <span class="font-bold text-white">{{ $categoryData->first()->danhMuc->ten_danh_muc ?? 'các danh mục không cần thiết' }}</span> để tối ưu hoá ngân sách.
+                        </p>
+                    @elseif($savingsRate >= 20)
+                        <p class="mb-4 text-on-primary/80">
+                            Tuyệt vời! Bạn đã tiết kiệm được <span class="font-bold text-white">{{ $savingsRate }}%</span> thu nhập. 
+                            Bạn có muốn thiết lập một biểu đồ mục tiêu tích luỹ mới cho kỳ nghỉ tiếp theo không?
+                        </p>
+                    @else
+                        <p class="mb-4 text-on-primary/80">
+                            Bắt đầu ghi lại các giao dịch của bạn để Curator AI có thể phân tích và đưa ra những gợi ý tài chính thông minh nhất cho bạn.
+                        </p>
+                    @endif
+                </div>
+                <div class="mt-auto">
+                    <button id="btnAnalyzeAi" class="relative z-10 w-full py-3 bg-white text-primary font-extrabold rounded-xl text-sm shadow-xl active:scale-95 transition-all hover:bg-surface-container-low flex justify-center items-center gap-2">
+                        <span class="material-symbols-outlined text-lg">auto_awesome</span>
+                        Phân tích chuyên sâu với AI
+                    </button>
+                </div>
             </div>
-            <button class="relative z-10 w-full py-3 bg-white text-primary font-extrabold rounded-xl text-sm shadow-xl active:scale-95 transition-all hover:bg-surface-container-low">
-                Xem Phân tích Chi tiết
-            </button>
         </div>
     </div>
 </div>
@@ -326,6 +331,61 @@
                         legend: { display: false },
                         tooltip: { backgroundColor: '#131b2e', padding: 12 }
                     }
+                }
+            });
+        }
+
+        // --- AI Analysis Logic ---
+        const btnAnalyzeAi = document.getElementById('btnAnalyzeAi');
+        const aiInsightsContent = document.getElementById('aiInsightsContent');
+
+        if (btnAnalyzeAi) {
+            btnAnalyzeAi.addEventListener('click', async function() {
+                // Set loading state
+                const originalBtnText = btnAnalyzeAi.innerHTML;
+                btnAnalyzeAi.innerHTML = '<span class="material-symbols-outlined text-lg animate-spin">refresh</span> Đang phân tích...';
+                btnAnalyzeAi.disabled = true;
+                
+                aiInsightsContent.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-6">
+                        <div class="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin mb-4"></div>
+                        <p class="text-sm font-medium animate-pulse">Curator AI đang đánh giá dữ liệu...</p>
+                    </div>
+                `;
+
+                try {
+                    const response = await fetch('{{ route("ai.phan_tich") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ days: 30 })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        // Basic markdown parsing
+                        let htmlContent = result.data.analysis
+                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                            .replace(/\n/g, '<br>');
+                            
+                        aiInsightsContent.innerHTML = `<div class="text-sm space-y-2 pb-4">${htmlContent}</div>`;
+                        
+                        btnAnalyzeAi.innerHTML = '<span class="material-symbols-outlined text-lg">check_circle</span> Đã phân tích xong';
+                        setTimeout(() => {
+                            btnAnalyzeAi.innerHTML = originalBtnText;
+                            btnAnalyzeAi.disabled = false;
+                        }, 5000);
+                    } else {
+                        throw new Error(result.message || 'Có lỗi xảy ra');
+                    }
+                } catch (error) {
+                    aiInsightsContent.innerHTML = `<div class="text-sm text-red-200">Lỗi: ${error.message}</div>`;
+                    btnAnalyzeAi.innerHTML = originalBtnText;
+                    btnAnalyzeAi.disabled = false;
                 }
             });
         }
