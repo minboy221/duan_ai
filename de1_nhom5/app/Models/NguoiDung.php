@@ -25,6 +25,7 @@ class NguoiDung extends Authenticatable
         'email_verified_at',
         'anh_dai_dien',
         'password_changed_at',
+        'so_du_kho_an_toan',
     ];
 
     protected $casts = [

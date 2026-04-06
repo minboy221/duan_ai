@@ -30,7 +30,13 @@ class OtpMail extends Mailable
      */
     public function envelope(): Envelope
     {
-        $subject = $this->type === 'reset' ? 'Mã xác thực đặt lại mật khẩu' : 'Mã xác thực tài khoản';
+        $subject = 'Mã xác thực tài khoản';
+        if ($this->type === 'reset') {
+            $subject = 'Mã xác thực đặt lại mật khẩu';
+        } elseif ($this->type === 'vault') {
+            $subject = 'Mã xác thực truy cập Kho an toàn';
+        }
+
         return new Envelope(
             subject: $subject,
         );

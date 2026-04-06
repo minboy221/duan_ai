@@ -155,6 +155,20 @@
             </div>
         </div>
         
+        <!-- Safe Vault Card -->
+        <div class="bg-surface-container-highest rounded-2xl p-8 border border-outline-variant/10 shadow-sm flex flex-col justify-between group">
+            <div class="text-left">
+                <div class="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <span class="material-symbols-outlined" data-icon="shield">shield</span>
+                </div>
+                <h4 class="text-xl font-bold mb-2">Kho an toàn</h4>
+                <p class="text-xs text-outline leading-relaxed mb-6">Lớp bảo vệ OTP siêu cấp cho tài sản tích luỹ của bạn.</p>
+            </div>
+            <a href="{{ route('kho-an-toan.auth') }}" class="w-full py-3 bg-primary text-on-primary font-extrabold rounded-xl text-sm shadow-xl active:scale-95 transition-all hover:shadow-primary/40 text-center">
+                Truy cập ngay
+            </a>
+        </div>
+
         <!-- AI Insights Card -->
         <div class="bg-primary text-on-primary rounded-2xl p-8 relative overflow-hidden flex flex-col justify-between shadow-xl">
             <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
