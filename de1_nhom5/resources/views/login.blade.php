@@ -51,7 +51,10 @@
             @endif
             <div>
                 <label class="block text-sm font-label font-semibold text-on-surface mb-2" for="email">Email</label>
-                <input class="w-full px-4 py-3 rounded-xl border-none bg-surface-container-low text-on-surface focus:ring-2 focus:ring-primary-container transition-all placeholder:text-outline-variant" id="email" name="email" placeholder="curator@finance.vn" type="email" required autofocus value="{{ old('email') }}"/>
+                <input class="w-full px-4 py-3 rounded-xl border-none bg-surface-container-low text-on-surface focus:ring-2 focus:ring-primary-container transition-all placeholder:text-outline-variant @error('email') border border-error bg-error-container/10 @enderror" id="email" name="email" placeholder="curator@finance.vn" type="email" autofocus value="{{ old('email') }}"/>
+                @error('email')
+                    <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                @enderror
             </div>
             <div>
                 <div class="flex justify-between items-center mb-2">
@@ -59,10 +62,13 @@
                     <a class="text-xs font-semibold text-primary hover:text-primary-container transition-colors" href="{{ route('forgot-password') }}">Quên mật khẩu?</a>
                 </div>
                 <div class="relative">
-                    <input class="w-full px-4 py-3 rounded-xl border-none bg-surface-container-low text-on-surface focus:ring-2 focus:ring-primary-container transition-all placeholder:text-outline-variant" id="password" name="password" placeholder="••••••••" type="password" required/>
+                    <input class="w-full px-4 py-3 rounded-xl border-none bg-surface-container-low text-on-surface focus:ring-2 focus:ring-primary-container transition-all placeholder:text-outline-variant @error('password') border border-error bg-error-container/10 @enderror" id="password" name="password" placeholder="••••••••" type="password"/>
                     <button id="toggle-password" class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors" type="button">
                         <span class="material-symbols-outlined text-sm" id="toggle-icon">visibility</span>
                     </button>
+                    @error('password')
+                        <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
             <button class="w-full py-4 rounded-xl bg-gradient-to-r from-primary to-primary-container text-white font-semibold text-lg shadow-lg shadow-primary/20 hover:opacity-90 active:scale-[0.98] transition-all duration-200" type="submit">

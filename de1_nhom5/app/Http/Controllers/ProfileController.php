@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Requests\Profile\UpdateProfileRequest;
+use App\Http\Requests\Profile\VerifyPasswordOtpRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -24,14 +26,8 @@ class ProfileController extends Controller
     /**
      * Update the user's profile information.
      */
-    public function update(Request $request)
+    public function update(UpdateProfileRequest $request)
     {
-        $request->validate([
-            'ho_ten' => 'required|string|max:255',
-            'tien_te' => 'nullable|string',
-            'ngon_ngu' => 'nullable|string',
-            'anh_dai_dien' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
-        ]);
 
         $user = Auth::user();
         
@@ -113,14 +109,8 @@ class ProfileController extends Controller
     /**
      * Verify OTP and change password.
      */
-    public function verifyPasswordOtp(Request $request)
+    public function verifyPasswordOtp(VerifyPasswordOtpRequest $request)
     {
-        $request->validate([
-            'otp' => 'required|digits:6',
-            'password' => 'required|string|min:8|same:confirm-password',
-        ], [
-            'password.same' => 'Mật khẩu xác nhận không khớp.'
-        ]);
 
         $user = Auth::user();
         

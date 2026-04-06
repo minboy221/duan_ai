@@ -110,7 +110,7 @@
 </div>
 
 <!-- Add Money Modal -->
-<div id="add-money-modal" class="fixed inset-0 bg-black/60 hidden backdrop-blur-sm z-50 flex items-center justify-center">
+<div id="add-money-modal" class="fixed inset-0 bg-black/60 {{ $errors->has('so_tien_them') ? '' : 'hidden' }} backdrop-blur-sm z-50 flex items-center justify-center">
     <div class="bg-surface-container-lowest p-8 rounded-3xl shadow-2xl w-full max-w-sm border border-outline-variant/10 relative">
         <button onclick="document.getElementById('add-money-modal').classList.add('hidden')" class="absolute top-4 right-4 text-outline hover:text-on-surface">
             <span class="material-symbols-outlined" data-icon="close">close</span>
@@ -122,7 +122,10 @@
             @method('PATCH')
             <div>
                 <label class="block text-sm font-semibold mb-2">Số tiền gửi thêm (VNĐ)</label>
-                <input type="number" name="so_tien_them" min="1" required class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary" placeholder="Nhập số tiền...">
+                <input type="number" name="so_tien_them" value="{{ old('so_tien_them') }}" min="1" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('so_tien_them') border border-error bg-error-container/10 @enderror" placeholder="Nhập số tiền...">
+                @error('so_tien_them')
+                    <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                @enderror
             </div>
             <div class="pt-4">
                 <button type="submit" class="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-lg hover:bg-primary/90 transition-all">Xác nhận nộp</button>
@@ -132,7 +135,7 @@
 </div>
 
 <!-- Modal: Add Goal -->
-<div id="savings-modal" class="fixed inset-0 bg-black/60 hidden backdrop-blur-sm z-50 flex items-center justify-center">
+<div id="savings-modal" class="fixed inset-0 bg-black/60 {{ $errors->hasAny(['ten_muc_tieu', 'so_tien_muc_tieu', 'han_chot']) ? '' : 'hidden' }} backdrop-blur-sm z-50 flex items-center justify-center">
     <div class="bg-surface-container-lowest p-8 rounded-3xl shadow-2xl w-full max-w-md border border-outline-variant/10 relative">
         <button onclick="document.getElementById('savings-modal').classList.add('hidden')" class="absolute top-4 right-4 text-outline hover:text-on-surface">
             <span class="material-symbols-outlined" data-icon="close">close</span>
@@ -142,22 +145,34 @@
             @csrf
             <div>
                 <label class="block text-sm font-semibold mb-2">Tên mục tiêu</label>
-                <input type="text" name="ten_muc_tieu" required class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-secondary" placeholder="Vd: Mua xe, Đám cưới...">
+                <input type="text" name="ten_muc_tieu" value="{{ old('ten_muc_tieu') }}" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-secondary @error('ten_muc_tieu') border border-error bg-error-container/10 @enderror" placeholder="Vd: Mua xe, Đám cưới...">
+                @error('ten_muc_tieu')
+                    <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                @enderror
             </div>
             
             <div>
                 <label class="block text-sm font-semibold mb-2">Số tiền mục tiêu (VNĐ)</label>
-                <input type="number" name="so_tien_muc_tieu" min="100000" required class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-secondary">
+                <input type="number" name="so_tien_muc_tieu" value="{{ old('so_tien_muc_tieu') }}" min="100000" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-secondary @error('so_tien_muc_tieu') border border-error bg-error-container/10 @enderror">
+                @error('so_tien_muc_tieu')
+                    <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
                 <label class="block text-sm font-semibold mb-2">Mục tiêu đạt vào (Hạn chót)</label>
-                <input type="date" name="han_chot" required class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-secondary">
+                <input type="date" name="han_chot" value="{{ old('han_chot') }}" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-secondary @error('han_chot') border border-error bg-error-container/10 @enderror">
+                @error('han_chot')
+                    <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
                 <label class="block text-sm font-semibold mb-2">Đã có khuyến mãi/tích luỹ sẵn (Tuỳ chọn)</label>
-                <input type="number" name="so_tien_hien_tai" min="0" value="0" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-secondary">
+                <input type="number" name="so_tien_hien_tai" value="{{ old('so_tien_hien_tai', 0) }}" min="0" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-secondary @error('so_tien_hien_tai') border border-error bg-error-container/10 @enderror">
+                @error('so_tien_hien_tai')
+                    <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                @enderror
             </div>
             
             <div class="pt-4">

@@ -97,7 +97,7 @@
 </div>
 
 <!-- Modal: Add Budget -->
-<div id="budget-modal" class="fixed inset-0 bg-black/60 hidden backdrop-blur-sm z-50 flex items-center justify-center">
+<div id="budget-modal" class="fixed inset-0 bg-black/60 {{ $errors->hasAny(['so_tien_han_muc', 'danh_muc_id']) ? '' : 'hidden' }} backdrop-blur-sm z-50 flex items-center justify-center">
     <div class="bg-surface-container-lowest p-8 rounded-3xl shadow-2xl w-full max-w-md border border-outline-variant/10 relative">
         <button onclick="document.getElementById('budget-modal').classList.add('hidden')" class="absolute top-4 right-4 text-outline hover:text-on-surface">
             <span class="material-symbols-outlined" data-icon="close">close</span>
@@ -108,17 +108,23 @@
             <div class="flex gap-4">
                 <div class="flex-1">
                     <label class="block text-sm font-semibold mb-2">Tháng</label>
-                    <input type="number" name="thang" min="1" max="12" value="{{ $month }}" required class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary">
+                    <input type="number" name="thang" min="1" max="12" value="{{ old('thang', $month) }}" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('thang') border border-error bg-error-container/10 @enderror">
+                    @error('thang')
+                        <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                    @enderror
                 </div>
                 <div class="flex-1">
                     <label class="block text-sm font-semibold mb-2">Năm</label>
-                    <input type="number" name="nam" min="2000" max="2100" value="{{ $year }}" required class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary">
+                    <input type="number" name="nam" min="2000" max="2100" value="{{ old('nam', $year) }}" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('nam') border border-error bg-error-container/10 @enderror">
+                    @error('nam')
+                        <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
             
             <div>
                 <label class="block text-sm font-semibold mb-2">Danh mục chi tiêu</label>
-                <select name="danh_muc_id" required class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary">
+                <select name="danh_muc_id" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary">
                     <option value="" disabled selected>Chọn danh mục</option>
                     @foreach($danhMucs as $cat)
                         <option value="{{ $cat->id }}">{{ $cat->ten_danh_muc }}</option>
@@ -131,7 +137,10 @@
 
             <div>
                 <label class="block text-sm font-semibold mb-2">Hạn mức (VNĐ)</label>
-                <input type="number" name="so_tien_han_muc" min="1" required class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary" placeholder="Ví dụ: 5000000">
+                <input type="number" name="so_tien_han_muc" value="{{ old('so_tien_han_muc') }}" min="1" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('so_tien_han_muc') border border-error bg-error-container/10 @enderror" placeholder="Ví dụ: 5000000">
+                @error('so_tien_han_muc')
+                    <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                @enderror
             </div>
             
             <div class="pt-4">

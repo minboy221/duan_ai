@@ -101,7 +101,7 @@
 </div>
 
 <!-- Modal: Add Recurring -->
-<div id="recurring-modal" class="fixed inset-0 bg-black/60 hidden backdrop-blur-sm z-50 flex items-center justify-center">
+<div id="recurring-modal" class="fixed inset-0 bg-black/60 {{ $errors->hasAny(['so_tien', 'chu_ky', 'ngay_bat_dau', 'danh_muc_id']) ? '' : 'hidden' }} backdrop-blur-sm z-50 flex items-center justify-center">
     <div class="bg-surface-container-lowest p-8 rounded-3xl shadow-2xl w-full max-w-md border border-outline-variant/10 relative">
         <button onclick="document.getElementById('recurring-modal').classList.add('hidden')" class="absolute top-4 right-4 text-outline hover:text-on-surface">
             <span class="material-symbols-outlined" data-icon="close">close</span>
@@ -113,43 +113,58 @@
                 <label class="block text-sm font-semibold mb-2">Loại giao dịch</label>
                 <div class="grid grid-cols-2 gap-4">
                     <label class="relative flex items-center justify-center p-3 border-2 rounded-xl cursor-pointer transition-all has-[:checked]:border-secondary has-[:checked]:bg-secondary/5 font-bold text-sm">
-                        <input type="radio" name="loai_giao_dich" value="thu" checked class="sr-only">
+                        <input type="radio" name="loai_giao_dich" value="thu" {{ old('loai_giao_dich', 'thu') == 'thu' ? 'checked' : '' }} class="sr-only">
                         Thu nhập (+)
                     </label>
                     <label class="relative flex items-center justify-center p-3 border-2 rounded-xl cursor-pointer transition-all has-[:checked]:border-tertiary has-[:checked]:bg-tertiary/5 font-bold text-sm">
-                        <input type="radio" name="loai_giao_dich" value="chi" class="sr-only">
+                        <input type="radio" name="loai_giao_dich" value="chi" {{ old('loai_giao_dich') == 'chi' ? 'checked' : '' }} class="sr-only">
                         Chi tiêu (-)
                     </label>
                 </div>
+                @error('loai_giao_dich')
+                    <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
                 <label class="block text-sm font-semibold mb-2">Danh mục</label>
-                <select name="danh_muc_id" required class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary">
+                <select name="danh_muc_id" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('danh_muc_id') border border-error bg-error-container/10 @enderror">
                     @foreach($danhMucs as $cat)
-                        <option value="{{ $cat->id }}">{{ $cat->ten_danh_muc }} ({{ $cat->loai == 'thu' ? 'Thu' : 'Chi' }})</option>
+                        <option value="{{ $cat->id }}" {{ old('danh_muc_id') == $cat->id ? 'selected' : '' }}>{{ $cat->ten_danh_muc }} ({{ $cat->loai == 'thu' ? 'Thu' : 'Chi' }})</option>
                     @endforeach
                 </select>
+                @error('danh_muc_id')
+                    <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
                 <label class="block text-sm font-semibold mb-2">Số tiền (VNĐ)</label>
-                <input type="number" name="so_tien" min="1" required class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary">
+                <input type="number" name="so_tien" value="{{ old('so_tien') }}" min="1" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('so_tien') border border-error bg-error-container/10 @enderror">
+                @error('so_tien')
+                    <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
                 <label class="block text-sm font-semibold mb-2">Chu kỳ lặp lại</label>
-                <select name="chu_ky" required class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary">
-                    <option value="hang_ngay">Hàng ngày</option>
-                    <option value="hang_tuan">Hàng tuần</option>
-                    <option value="hang_thang" selected>Hàng tháng</option>
-                    <option value="hang_nam">Hàng năm</option>
+                <select name="chu_ky" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('chu_ky') border border-error bg-error-container/10 @enderror">
+                    <option value="hang_ngay" {{ old('chu_ky') == 'hang_ngay' ? 'selected' : '' }}>Hàng ngày</option>
+                    <option value="hang_tuan" {{ old('chu_ky') == 'hang_tuan' ? 'selected' : '' }}>Hàng tuần</option>
+                    <option value="hang_thang" {{ old('chu_ky', 'hang_thang') == 'hang_thang' ? 'selected' : '' }}>Hàng tháng</option>
+                    <option value="hang_nam" {{ old('chu_ky') == 'hang_nam' ? 'selected' : '' }}>Hàng năm</option>
                 </select>
+                @error('chu_ky')
+                    <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
                 <label class="block text-sm font-semibold mb-2">Ngày bắt đầu</label>
-                <input type="date" name="ngay_bat_dau" required value="{{ date('Y-m-d') }}" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary">
+                <input type="date" name="ngay_bat_dau" value="{{ old('ngay_bat_dau', date('Y-m-d')) }}" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('ngay_bat_dau') border border-error bg-error-container/10 @enderror">
+                @error('ngay_bat_dau')
+                    <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <div class="pt-4">
