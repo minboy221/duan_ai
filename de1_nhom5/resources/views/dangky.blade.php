@@ -64,25 +64,25 @@
                 @endif
                 <div class="space-y-1">
                     <label class="text-xs font-bold text-outline-variant uppercase tracking-wider ml-1" for="fullname">Họ và tên</label>
-                    <input class="w-full px-4 py-3.5 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all text-on-surface placeholder:text-outline/40" id="fullname" name="fullname" placeholder="Nguyễn Văn A" type="text"/>
+                    <input class="w-full px-4 py-3.5 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all text-on-surface placeholder:text-outline/40" id="fullname" name="fullname" placeholder="Nguyễn Văn A" type="text" required autofocus value="{{ old('fullname') }}"/>
                 </div>
                 <div class="space-y-1">
                     <label class="text-xs font-bold text-outline-variant uppercase tracking-wider ml-1" for="email">Địa chỉ Email</label>
-                    <input class="w-full px-4 py-3.5 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all text-on-surface placeholder:text-outline/40" id="email" name="email" placeholder="ten@vidu.com" type="email"/>
+                    <input class="w-full px-4 py-3.5 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all text-on-surface placeholder:text-outline/40" id="email" name="email" placeholder="ten@vidu.com" type="email" required value="{{ old('email') }}"/>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="space-y-1">
                         <label class="text-xs font-bold text-outline-variant uppercase tracking-wider ml-1" for="password">Mật khẩu</label>
-                        <input class="w-full px-4 py-3.5 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all text-on-surface placeholder:text-outline/40" id="password" name="password" placeholder="••••••••" type="password"/>
+                        <input class="w-full px-4 py-3.5 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all text-on-surface placeholder:text-outline/40" id="password" name="password" placeholder="••••••••" type="password" required/>
                     </div>
                     <div class="space-y-1">
                         <label class="text-xs font-bold text-outline-variant uppercase tracking-wider ml-1" for="confirm-password">Xác nhận</label>
-                        <input class="w-full px-4 py-3.5 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all text-on-surface placeholder:text-outline/40" id="confirm-password" name="confirm-password" placeholder="••••••••" type="password"/>
+                        <input class="w-full px-4 py-3.5 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all text-on-surface placeholder:text-outline/40" id="confirm-password" name="password_confirmation" placeholder="••••••••" type="password" required/>
                     </div>
                 </div>
                 <div class="flex items-start gap-3 py-2">
                     <div class="flex items-center h-5">
-                        <input class="h-5 w-5 rounded-lg border-outline-variant/30 text-primary focus:ring-primary/30 bg-surface-container-low cursor-pointer" id="terms" name="terms" type="checkbox"/>
+                        <input class="h-5 w-5 rounded-lg border-outline-variant/30 text-primary focus:ring-primary/30 bg-surface-container-low cursor-pointer" id="terms" name="terms" type="checkbox" required/>
                     </div>
                     <div class="text-sm">
                         <label class="text-on-surface-variant leading-relaxed" for="terms">
