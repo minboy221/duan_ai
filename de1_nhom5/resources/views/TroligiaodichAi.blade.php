@@ -31,7 +31,7 @@
             <span class="text-[10px] font-bold text-secondary uppercase tracking-widest">+12.5% vs tháng trước</span>
         </div>
         <p class="text-on-surface-variant text-xs font-semibold mb-1">Tổng Thu nhập (Tháng này)</p>
-        <h3 class="text-2xl font-black font-headline text-secondary tracking-tight">85.000.000 <span class="text-sm font-bold">VNĐ</span></h3>
+        <h3 class="text-2xl font-black font-headline text-secondary tracking-tight">{{ Auth::check() ? '85.000.000' : '0' }} <span class="text-sm font-bold">VNĐ</span></h3>
     </div>
     <div class="col-span-12 lg:col-span-4 p-6 bg-surface-container-lowest rounded-full shadow-sm">
         <div class="flex items-center justify-between mb-4">
@@ -41,7 +41,7 @@
             <span class="text-[10px] font-bold text-tertiary uppercase tracking-widest">-2.4% vs tháng trước</span>
         </div>
         <p class="text-on-surface-variant text-xs font-semibold mb-1">Tổng Chi tiêu (Tháng này)</p>
-        <h3 class="text-2xl font-black font-headline text-tertiary tracking-tight">42.350.000 <span class="text-sm font-bold">VNĐ</span></h3>
+        <h3 class="text-2xl font-black font-headline text-tertiary tracking-tight">{{ Auth::check() ? '42.350.000' : '0' }} <span class="text-sm font-bold">VNĐ</span></h3>
     </div>
     <div class="col-span-12 lg:col-span-4 p-6 bg-primary-container text-on-primary-container rounded-full shadow-lg shadow-primary/10">
         <div class="flex items-center justify-between mb-4">
@@ -51,7 +51,7 @@
             <span class="text-[10px] font-bold text-white/70 uppercase tracking-widest">Mục tiêu: 50M</span>
         </div>
         <p class="text-white/70 text-xs font-semibold mb-1">Số dư ròng</p>
-        <h3 class="text-2xl font-black font-headline text-white tracking-tight">42.650.000 <span class="text-sm font-bold">VNĐ</span></h3>
+        <h3 class="text-2xl font-black font-headline text-white tracking-tight">{{ Auth::check() ? '42.650.000' : '0' }} <span class="text-sm font-bold">VNĐ</span></h3>
     </div>
 </div>
 
@@ -115,7 +115,7 @@
                         <span class="px-3 py-1 bg-surface-container-high rounded-full text-[10px] font-bold text-on-surface-variant uppercase tracking-tight">Lương</span>
                     </td>
                     <td class="px-8 py-6 text-right">
-                        <p class="text-sm font-black text-secondary">+ 45.000.000 VNĐ</p>
+                        <p class="text-sm font-black text-secondary">{{ Auth::check() ? '+ 45.000.000' : '0' }} VNĐ</p>
                     </td>
                     <td class="px-8 py-6 text-center">
                         <div class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-secondary-container/10 text-secondary border border-secondary/20">
@@ -150,7 +150,7 @@
                         <span class="px-3 py-1 bg-surface-container-high rounded-full text-[10px] font-bold text-on-surface-variant uppercase tracking-tight">Ăn uống</span>
                     </td>
                     <td class="px-8 py-6 text-right">
-                        <p class="text-sm font-black text-tertiary">- 1.250.000 VNĐ</p>
+                        <p class="text-sm font-black text-tertiary">{{ Auth::check() ? '- 1.250.000' : '0' }} VNĐ</p>
                     </td>
                     <td class="px-8 py-6 text-center">
                         <div class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-secondary-container/10 text-secondary border border-secondary/20">
@@ -185,7 +185,7 @@
                         <span class="px-3 py-1 bg-surface-container-high rounded-full text-[10px] font-bold text-on-surface-variant uppercase tracking-tight">Thuê nhà</span>
                     </td>
                     <td class="px-8 py-6 text-right">
-                        <p class="text-sm font-black text-tertiary">- 15.000.000 VNĐ</p>
+                        <p class="text-sm font-black text-tertiary">{{ Auth::check() ? '- 15.000.000' : '0' }} VNĐ</p>
                     </td>
                     <td class="px-8 py-6 text-center">
                         <div class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-secondary-container/10 text-secondary border border-secondary/20">
@@ -220,7 +220,7 @@
                         <span class="px-3 py-1 bg-surface-container-high rounded-full text-[10px] font-bold text-on-surface-variant uppercase tracking-tight">Di chuyển</span>
                     </td>
                     <td class="px-8 py-6 text-right">
-                        <p class="text-sm font-black text-tertiary">- 320.000 VNĐ</p>
+                        <p class="text-sm font-black text-tertiary">{{ Auth::check() ? '- 320.000' : '0' }} VNĐ</p>
                     </td>
                     <td class="px-8 py-6 text-center">
                         <div class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200">

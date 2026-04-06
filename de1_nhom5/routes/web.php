@@ -8,6 +8,7 @@ use App\Http\Controllers\SavingsGoalController;
 use App\Http\Controllers\RecurringTransactionController;
 use App\Http\Controllers\DanhMucController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,6 +19,7 @@ use App\Http\Controllers\DashboardController;
 Route::get('/', [DashboardController::class, 'index'])->middleware('auth')->name('dashboard');
 Route::get('/phan-tich-ai', function () { return view('phantichAi'); })->name('phantich-ai');
 Route::get('/tro-ly-giao-dich-ai', function () { return view('TroligiaodichAi'); })->name('tro-ly-giao-dich-ai');
+Route::get('/huong-dan', function () { return view('huongdan'); })->name('huongdan');
 
 // Authentication Routes
 Route::middleware('guest')->group(function () {
@@ -66,5 +68,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/danh-muc', [DanhMucController::class, 'index'])->name('danhmuc.index');
     Route::post('/danh-muc', [DanhMucController::class, 'store'])->name('danhmuc.store');
     Route::delete('/danh-muc/{id}', [DanhMucController::class, 'destroy'])->name('danhmuc.destroy');
+    
+    // Profile
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.update.avatar');
+    
+    // Đổi mật khẩu qua OTP (Profile)
+    Route::post('/profile/password/send-otp', [ProfileController::class, 'sendPasswordOtp'])->name('profile.password.send-otp');
+    Route::get('/profile/password/verify', [ProfileController::class, 'showPasswordOtpForm'])->name('profile.password.verify');
+    Route::post('/profile/password/verify', [ProfileController::class, 'verifyPasswordOtp'])->name('profile.password.verify.post');
 });
 
