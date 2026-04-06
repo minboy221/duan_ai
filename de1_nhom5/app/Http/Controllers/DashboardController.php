@@ -107,6 +107,32 @@ class DashboardController extends Controller
             ->values()
             ->take(5);
 
+        // 6. Expense Comparison (This Month vs Last Month)
+        $monthDaysLabels = array_map(fn($i) => "Ngày $i", range(1, 31));
+        $thisMonthExpenses = array_fill(0, 31, 0);
+        $lastMonthExpenses = array_fill(0, 31, 0);
+
+        $thisMonthData = GiaoDich::where('nguoi_dung_id', $userId)
+            ->whereBetween('ngay_giao_dich', [$startOfMonth, $endOfMonth])
+            ->get();
+        foreach($thisMonthData as $g) {
+            $dayIndex = (int)date('d', strtotime($g->ngay_giao_dich)) - 1;
+            $thisMonthExpenses[$dayIndex] += $g->so_tien;
+        }
+
+        $lastMonthStart = $now->copy()->subMonth()->startOfMonth();
+        $lastMonthEnd = $now->copy()->subMonth()->endOfMonth();
+        $lastMonthData = GiaoDich::where('nguoi_dung_id', $userId)
+            ->whereBetween('ngay_giao_dich', [$lastMonthStart, $lastMonthEnd])
+            ->get();
+        foreach($lastMonthData as $g) {
+            $dayIndex = (int)date('d', strtotime($g->ngay_giao_dich)) - 1;
+            $lastMonthExpenses[$dayIndex] += $g->so_tien;
+        }
+
+        $thisMonthValues = $thisMonthExpenses;
+        $lastMonthValues = $lastMonthExpenses;
+
         return view('dashboard', compact(
             'availableBalance', 
             'monthlyIncome', 
@@ -116,7 +142,10 @@ class DashboardController extends Controller
             'days',
             'incomeTrends',
             'expenseTrends',
-            'recentActivity'
+            'recentActivity',
+            'monthDaysLabels',
+            'thisMonthValues',
+            'lastMonthValues'
         ));
     }
 }

@@ -10,8 +10,8 @@
             <h2 class="text-3xl font-extrabold tracking-tight text-on-surface">Lập lịch Giao dịch</h2>
             <p class="text-outline text-sm mt-1">Tự động hoá các khoản thu chi lặp lại hàng ngày, tuần, tháng</p>
         </div>
-        <button onclick="document.getElementById('recurring-modal').classList.remove('hidden')" class="bg-primary text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg hover:bg-primary/90 transition-all flex items-center gap-2">
-            <span class="material-symbols-outlined" data-icon="update">update</span> Thêm Lịch mới
+        <button onclick="openModal()" class="bg-primary text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg hover:bg-primary/90 transition-all flex items-center gap-2">
+            <span class="material-symbols-outlined" data-icon="update">add</span> Thêm Lịch mới
         </button>
     </div>
 
@@ -77,7 +77,10 @@
                                 </button>
                             </form>
                         </td>
-                        <td class="px-6 py-4 text-right">
+                        <td class="px-6 py-4 text-right flex gap-3 justify-end items-center">
+                            <button type="button" class="text-outline hover:text-primary transition-colors" onclick='openModal({{ json_encode($item) }})'>
+                                <span class="material-symbols-outlined" data-icon="edit">edit</span>
+                            </button>
                             <form action="{{ route('recurring.destroy', $item->id) }}" method="POST" class="inline-block">
                                 @csrf
                                 @method('DELETE')
@@ -106,18 +109,19 @@
         <button onclick="document.getElementById('recurring-modal').classList.add('hidden')" class="absolute top-4 right-4 text-outline hover:text-on-surface">
             <span class="material-symbols-outlined" data-icon="close">close</span>
         </button>
-        <h3 class="text-xl font-bold mb-6 text-on-surface">Thiết lập Giao dịch Định kỳ</h3>
-        <form method="POST" action="{{ route('recurring.store') }}" class="space-y-4">
+        <h3 class="text-xl font-bold mb-6 text-on-surface" id="modal-title">Thiết lập Giao dịch Định kỳ</h3>
+        <form method="POST" action="{{ route('recurring.store') }}" id="recurring-form" class="space-y-4">
             @csrf
+            <div id="method-container"></div>
             <div>
                 <label class="block text-sm font-semibold mb-2">Loại giao dịch</label>
                 <div class="grid grid-cols-2 gap-4">
                     <label class="relative flex items-center justify-center p-3 border-2 rounded-xl cursor-pointer transition-all has-[:checked]:border-secondary has-[:checked]:bg-secondary/5 font-bold text-sm">
-                        <input type="radio" name="loai_giao_dich" value="thu" {{ old('loai_giao_dich', 'thu') == 'thu' ? 'checked' : '' }} class="sr-only">
+                        <input type="radio" onchange="filterCategories()" name="loai_giao_dich" value="thu" {{ old('loai_giao_dich', 'thu') == 'thu' ? 'checked' : '' }} class="sr-only">
                         Thu nhập (+)
                     </label>
                     <label class="relative flex items-center justify-center p-3 border-2 rounded-xl cursor-pointer transition-all has-[:checked]:border-tertiary has-[:checked]:bg-tertiary/5 font-bold text-sm">
-                        <input type="radio" name="loai_giao_dich" value="chi" {{ old('loai_giao_dich') == 'chi' ? 'checked' : '' }} class="sr-only">
+                        <input type="radio" onchange="filterCategories()" name="loai_giao_dich" value="chi" {{ old('loai_giao_dich') == 'chi' ? 'checked' : '' }} class="sr-only">
                         Chi tiêu (-)
                     </label>
                 </div>
@@ -128,9 +132,10 @@
 
             <div>
                 <label class="block text-sm font-semibold mb-2">Danh mục</label>
-                <select name="danh_muc_id" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('danh_muc_id') border border-error bg-error-container/10 @enderror">
+                <select name="danh_muc_id" id="danh_muc_id" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('danh_muc_id') border border-error bg-error-container/10 @enderror">
+                    <option value="" disabled selected>-- Chọn danh mục --</option>
                     @foreach($danhMucs as $cat)
-                        <option value="{{ $cat->id }}" {{ old('danh_muc_id') == $cat->id ? 'selected' : '' }}>{{ $cat->ten_danh_muc }} ({{ $cat->loai == 'thu' ? 'Thu' : 'Chi' }})</option>
+                        <option value="{{ $cat->id }}" data-loai="{{ $cat->loai }}" {{ old('danh_muc_id') == $cat->id ? 'selected' : '' }}>{{ $cat->ten_danh_muc }}</option>
                     @endforeach
                 </select>
                 @error('danh_muc_id')
@@ -161,16 +166,85 @@
 
             <div>
                 <label class="block text-sm font-semibold mb-2">Ngày bắt đầu</label>
-                <input type="date" name="ngay_bat_dau" value="{{ old('ngay_bat_dau', date('Y-m-d')) }}" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('ngay_bat_dau') border border-error bg-error-container/10 @enderror">
+                <input type="date" name="ngay_bat_dau" min="{{ date('Y-m-d') }}" value="{{ old('ngay_bat_dau', date('Y-m-d')) }}" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('ngay_bat_dau') border border-error bg-error-container/10 @enderror">
                 @error('ngay_bat_dau')
                     <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
                 @enderror
             </div>
 
             <div class="pt-4">
-                <button type="submit" class="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-lg hover:bg-primary/90 transition-all">Kích hoạt Tự động</button>
+                <button type="submit" id="submit-btn" class="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-lg hover:bg-primary/90 transition-all">Lưu Giao dịch</button>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+    function filterCategories() {
+        const loai = document.querySelector('input[name="loai_giao_dich"]:checked').value;
+        const options = document.querySelectorAll('#danh_muc_id option');
+        
+        let firstVisible = null;
+        options.forEach(opt => {
+            if (opt.value === "") return; // Bỏ qua option mặc định
+            if (opt.dataset.loai === loai) {
+                opt.style.display = 'block';
+                if(!firstVisible) firstVisible = opt;
+            } else {
+                opt.style.display = 'none';
+            }
+        });
+        
+        // Chọn cái đầu tiên phù hợp nếu danh mục hiện tại không hợp lệ
+        const currentSel = document.getElementById('danh_muc_id');
+        const currentOpt = currentSel.options[currentSel.selectedIndex];
+        if (currentOpt && currentOpt.dataset && currentOpt.dataset.loai !== loai) {
+            if (firstVisible) currentSel.value = firstVisible.value;
+            else currentSel.value = "";
+        }
+    }
+
+    function openModal(recurring = null) {
+        document.getElementById('recurring-modal').classList.remove('hidden');
+        const form = document.getElementById('recurring-form');
+        const methodContainer = document.getElementById('method-container');
+        const title = document.getElementById('modal-title');
+        const submitBtn = document.getElementById('submit-btn');
+        
+        // Reset form to Add Mode
+        form.reset();
+        form.action = "{{ route('recurring.store') }}";
+        methodContainer.innerHTML = '';
+        title.innerText = 'Thiết lập Giao dịch Định kỳ';
+        document.querySelector('input[name="loai_giao_dich"][value="thu"]').checked = true;
+
+        if (recurring) {
+            title.innerText = 'Cập nhật Giao dịch Định kỳ';
+            form.action = `/giao-dich-dinh-ky/${recurring.id}`;
+            methodContainer.innerHTML = '@method("PUT")';
+            
+            document.querySelector(`input[name="loai_giao_dich"][value="${recurring.loai_giao_dich}"]`).checked = true;
+            document.querySelector('input[name="so_tien"]').value = recurring.so_tien;
+            document.querySelector(`select[name="chu_ky"]`).value = recurring.chu_ky;
+            document.querySelector('input[name="ngay_bat_dau"]').value = recurring.ngay_bat_dau;
+            
+            if (recurring.ngay_ket_thuc) {
+                document.querySelector('input[name="ngay_ket_thuc"]').value = recurring.ngay_ket_thuc;
+            }
+            
+            // Xử lý selected danh mục
+            filterCategories();
+            setTimeout(() => {
+                document.getElementById('danh_muc_id').value = recurring.danh_muc_id;
+            }, 50);
+        } else {
+            filterCategories();
+        }
+    }
+
+    // Chạy khi init page
+    document.addEventListener('DOMContentLoaded', () => {
+        filterCategories();
+    });
+</script>
 @endsection

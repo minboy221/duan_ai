@@ -165,9 +165,16 @@
         <!-- TopNavBar Anchor -->
         <header class="w-full sticky top-0 z-40 bg-[#faf8ff] dark:bg-[#131b2e] flex justify-between items-center px-6 py-4">
             <div class="flex items-center gap-4 flex-1">
-                <div class="relative max-w-md w-full">
+                <div class="relative max-w-md w-full" id="page-search-container">
                     <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-xl">search</span>
-                    <input class="w-full bg-surface-container-low border-none rounded-full py-2.5 pl-11 pr-4 text-sm focus:ring-2 focus:ring-primary/20 placeholder:text-outline/60" placeholder="Tìm kiếm tài chính..." type="text"/>
+                    <input id="page-search-input" class="w-full bg-surface-container-low border-none rounded-full py-2.5 pl-11 pr-4 text-sm focus:ring-2 focus:ring-primary/20 placeholder:text-outline/60" placeholder="Tìm kiếm trang..." type="text" autocomplete="off"/>
+                    
+                    <!-- Search Results Dropdown -->
+                    <div id="page-search-results" class="hidden absolute top-full left-0 right-0 mt-2 bg-surface-container-lowest border border-outline-variant/20 rounded-xl overflow-hidden shadow-xl z-50">
+                        <ul class="max-h-64 overflow-y-auto" id="page-search-list">
+                            <!-- JS injected results -->
+                        </ul>
+                    </div>
                 </div>
             </div>
             <div class="flex items-center gap-4">
@@ -269,6 +276,60 @@
                     });
                 });
             });
+
+            // Page Search functionality
+            const searchPages = [
+                { title: 'Tổng quan (Dashboard)', route: '{{ route('dashboard') }}', icon: 'dashboard' },
+                { title: 'Giao dịch (Transactions)', route: '{{ route('transactions.index') }}', icon: 'receipt_long' },
+                { title: 'Ngân sách (Budget)', route: '{{ route('ngansach') }}', icon: 'pie_chart' },
+                { title: 'Tiết kiệm (Savings)', route: '{{ route('savings.index') }}', icon: 'savings' },
+                { title: 'Định kỳ (Recurring)', route: '{{ route('recurring.index') }}', icon: 'event_repeat' },
+                { title: 'Phân tích AI', route: '{{ route('phantich-ai') }}', icon: 'analytics' },
+                { title: 'Kho an toàn', route: '{{ route('kho-an-toan.auth') }}', icon: 'shield' },
+                { title: 'Danh mục', route: '{{ route('danhmuc.index') }}', icon: 'category' },
+                { title: 'Tài khoản (Profile)', route: '{{ route('profile.edit') }}', icon: 'settings' },
+                { title: 'VNPay Sandbox', route: '{{ route('vnpay.index') }}', icon: 'payments' },
+                { title: 'Hướng dẫn SD', route: '{{ route('huongdan') }}', icon: 'help_outline' }
+            ];
+
+            const pageSearchInput = document.getElementById('page-search-input');
+            const pageSearchResults = document.getElementById('page-search-results');
+            const pageSearchList = document.getElementById('page-search-list');
+
+            if (pageSearchInput && pageSearchResults && pageSearchList) {
+                pageSearchInput.addEventListener('input', function(e) {
+                    const query = e.target.value.toLowerCase().trim();
+                    if (!query) {
+                        pageSearchResults.classList.add('hidden');
+                        return;
+                    }
+
+                    const filtered = searchPages.filter(p => p.title.toLowerCase().includes(query));
+                    if (filtered.length > 0) {
+                        pageSearchList.innerHTML = filtered.map(item => `
+                            <li>
+                                <a href="${item.route}" class="flex items-center gap-3 px-4 py-3 hover:bg-surface-container-low transition-colors text-sm font-semibold text-on-surface">
+                                    <span class="material-symbols-outlined text-outline">${item.icon}</span>
+                                    ${item.title}
+                                </a>
+                            </li>
+                        `).join('');
+                        pageSearchResults.classList.remove('hidden');
+                    } else {
+                        pageSearchList.innerHTML = `
+                            <li class="px-4 py-4 text-center text-sm text-outline italic">Không tìm thấy trang nào</li>
+                        `;
+                        pageSearchResults.classList.remove('hidden');
+                    }
+                });
+
+                // Close dropdown when click outside
+                document.addEventListener('click', function(e) {
+                    if (!e.target.closest('#page-search-container')) {
+                        pageSearchResults.classList.add('hidden');
+                    }
+                });
+            }
         });
     </script>
 </body>

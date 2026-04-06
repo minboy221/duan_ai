@@ -47,6 +47,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/giao-dich', [TransactionController::class, 'index'])->name('transactions.index');
     Route::post('/giao-dich/chi-tiep', [TransactionController::class, 'storeExpense'])->name('transactions.expense.store');
     Route::post('/giao-dich/thu-nhap', [TransactionController::class, 'storeIncome'])->name('transactions.income.store');
+    Route::get('/giao-dich/export', [TransactionController::class, 'export'])->name('transactions.export');
+    Route::post('/giao-dich/import', [TransactionController::class, 'import'])->name('transactions.import');
 
     // Budget
     Route::get('/ngan-sach', [BudgetController::class, 'index'])->name('ngansach');
@@ -62,6 +64,7 @@ Route::middleware('auth')->group(function () {
     // Recurring Transactions
     Route::get('/giao-dich-dinh-ky', [RecurringTransactionController::class, 'index'])->name('recurring.index');
     Route::post('/giao-dich-dinh-ky', [RecurringTransactionController::class, 'store'])->name('recurring.store');
+    Route::put('/giao-dich-dinh-ky/{id}', [RecurringTransactionController::class, 'update'])->name('recurring.update');
     Route::patch('/giao-dich-dinh-ky/{id}/toggle', [RecurringTransactionController::class, 'toggle'])->name('recurring.toggle');
     Route::delete('/giao-dich-dinh-ky/{id}', [RecurringTransactionController::class, 'destroy'])->name('recurring.destroy');
 

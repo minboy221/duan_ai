@@ -49,6 +49,22 @@ class RecurringTransactionController extends Controller
         return redirect()->route('recurring.index')->with('success', 'Đã cập nhật trạng thái giao dịch định kỳ.');
     }
 
+    public function update(StoreRecurringRequest $request, $id)
+    {
+        $recurring = GiaoDichDinhKy::where('id', $id)->where('nguoi_dung_id', Auth::id())->firstOrFail();
+        
+        $recurring->update([
+            'danh_muc_id' => $request->danh_muc_id,
+            'loai_giao_dich' => $request->loai_giao_dich,
+            'so_tien' => $request->so_tien,
+            'chu_ky' => $request->chu_ky,
+            'ngay_bat_dau' => $request->ngay_bat_dau,
+            'ngay_ket_thuc' => $request->ngay_ket_thuc,
+        ]);
+
+        return redirect()->route('recurring.index')->with('success', 'Đã cập nhật giao dịch định kỳ thành công.');
+    }
+
     public function destroy($id)
     {
         $recurring = GiaoDichDinhKy::where('id', $id)->where('nguoi_dung_id', Auth::id())->firstOrFail();
