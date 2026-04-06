@@ -14,9 +14,13 @@ class GiaoDichDinhKy extends Model
     protected $fillable = [
         'nguoi_dung_id',
         'danh_muc_id',
+        'loai_giao_dich',
         'so_tien',
         'chu_ky',
         'ngay_bat_dau',
+        'ngay_ket_thuc',
+        'trang_thai',
+        'lan_thuc_hien_cuoi',
         'ngay_chay_tiep_theo',
     ];
 
