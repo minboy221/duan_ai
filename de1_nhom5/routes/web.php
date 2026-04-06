@@ -9,6 +9,7 @@ use App\Http\Controllers\RecurringTransactionController;
 use App\Http\Controllers\DanhMucController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\KhoAnToanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -89,5 +90,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/vnpay', [\App\Http\Controllers\VNPayController::class, 'index'])->name('vnpay.index');
     Route::post('/vnpay/pay', [\App\Http\Controllers\VNPayController::class, 'createPayment'])->name('vnpay.pay');
     Route::get('/vnpay/return', [\App\Http\Controllers\VNPayController::class, 'vnpayReturn'])->name('vnpay.return');
+
+    // Safe Vault (Kho An Toan)
+    Route::group(['prefix' => 'kho-an-toan', 'as' => 'kho-an-toan.'], function () {
+        Route::get('/auth', [KhoAnToanController::class, 'showAuth'])->name('auth');
+        Route::post('/send-otp', [KhoAnToanController::class, 'sendOtp'])->name('send-otp');
+        Route::post('/verify', [KhoAnToanController::class, 'verifyOtp'])->name('verify');
+        
+        Route::middleware(['auth'])->group(function () {
+            Route::get('/', [KhoAnToanController::class, 'index'])->name('index');
+            Route::post('/transfer', [KhoAnToanController::class, 'transfer'])->name('transfer');
+            Route::post('/lock', [KhoAnToanController::class, 'logout'])->name('lock');
+        });
+    });
 });
+
 
