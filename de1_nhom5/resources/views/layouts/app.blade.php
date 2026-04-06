@@ -128,10 +128,11 @@
             </a>
         </nav>
         <div class="mt-auto pt-6 border-t border-primary/5">
-            <a class="group flex items-center gap-3 px-6 py-3 text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-[#24389c] hover:bg-white/5 transition-all font-['Manrope'] text-sm font-semibold" href="#">
-                <span class="material-symbols-outlined">help_outline</span>
-                Hỗ trợ
+            <a class="group flex items-center gap-3 px-6 py-3 {{ request()->routeIs('huongdan') ? 'text-primary font-bold bg-primary/10' : 'text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-[#24389c] hover:bg-white/5' }} transition-all font-['Manrope'] text-sm font-semibold" href="{{ route('huongdan') }}">
+                <span class="material-symbols-outlined" {{ request()->routeIs('huongdan') ? 'style=font-variation-settings:\'FILL\'1;' : '' }}>help_outline</span>
+                Hướng dẫn SD
             </a>
+            @auth
             <form action="{{ route('logout') }}" method="POST">
                 @csrf
                 <button type="submit" class="w-full text-left group flex items-center gap-3 px-6 py-3 text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-tertiary transition-all font-['Manrope'] text-sm font-semibold">
@@ -139,6 +140,12 @@
                     Đăng xuất
                 </button>
             </form>
+            @else
+            <a href="{{ route('login') }}" class="group flex items-center gap-3 px-6 py-3 text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-primary transition-all font-['Manrope'] text-sm font-semibold">
+                <span class="material-symbols-outlined">login</span>
+                Đăng nhập
+            </a>
+            @endauth
         </div>
     </aside>
 

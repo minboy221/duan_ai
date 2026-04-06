@@ -18,6 +18,7 @@ Route::get('/', function () { return view('dashboard'); })->name('dashboard');
 Route::get('/ngan-sach', function () { return view('ngansach'); })->name('ngansach');
 Route::get('/phan-tich-ai', function () { return view('phantichAi'); })->name('phantich-ai');
 Route::get('/tro-ly-giao-dich-ai', function () { return view('TroligiaodichAi'); })->name('tro-ly-giao-dich-ai');
+Route::get('/huong-dan', function () { return view('huongdan'); })->name('huongdan');
 
 // Authentication Routes
 Route::middleware('guest')->group(function () {
