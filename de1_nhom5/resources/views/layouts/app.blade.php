@@ -126,10 +126,7 @@
                 <span class="material-symbols-outlined" {{ request()->routeIs('recurring.index') ? 'style=font-variation-settings:\'FILL\'1;' : '' }}>event_repeat</span>
                 Định kỳ
             </a>
-            <a class="group flex items-center gap-3 px-6 py-3 transition-all font-['Manrope'] text-sm font-semibold {{ request()->routeIs('vnpay.index') ? 'text-[#24389c] dark:text-[#3f51b5] relative before:content-[\'\'] before:absolute before:left-0 before:w-1 before:h-6 before:bg-[#24389c] before:rounded-full bg-white/40' : 'text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-[#24389c] hover:bg-white/50' }}" href="{{ route('vnpay.index') }}">
-                <span class="material-symbols-outlined" {{ request()->routeIs('vnpay.index') ? 'style=font-variation-settings:\'FILL\'1;' : '' }}>payments</span>
-                VNPay Sandbox
-            </a>
+
         </nav>
         <div class="mt-auto pt-6 border-t border-primary/5">
             <a class="group flex items-center gap-3 px-6 py-3 transition-all font-['Manrope'] text-sm font-semibold {{ request()->routeIs('danhmuc.index') ? 'text-[#24389c] dark:text-[#3f51b5] relative before:content-[\'\'] before:absolute before:left-0 before:w-1 before:h-6 before:bg-[#24389c] before:rounded-full bg-white/40' : 'text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-[#24389c] hover:bg-white/50' }}" href="{{ route('danhmuc.index') }}">

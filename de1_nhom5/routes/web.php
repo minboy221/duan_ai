@@ -86,10 +86,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/thong-bao/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
     Route::delete('/thong-bao/{id}', [\App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
 
-    // VNPay Demo
-    Route::get('/vnpay', [\App\Http\Controllers\VNPayController::class, 'index'])->name('vnpay.index');
-    Route::post('/vnpay/pay', [\App\Http\Controllers\VNPayController::class, 'createPayment'])->name('vnpay.pay');
-    Route::get('/vnpay/return', [\App\Http\Controllers\VNPayController::class, 'vnpayReturn'])->name('vnpay.return');
+
 
     // Safe Vault (Kho An Toan)
     Route::group(['prefix' => 'kho-an-toan', 'as' => 'kho-an-toan.'], function () {

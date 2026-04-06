@@ -9,10 +9,17 @@ class Kernel extends ConsoleKernel
 {
     /**
      * Define the application's command schedule.
+     *
+     * Chạy giao dịch định kỳ mỗi phút (kiểm tra ngay_chay_tiep_theo)
+     * Dùng withoutOverlapping() để tránh chạy trùng nếu lần trước chưa xong
+     * Sử dụng: php artisan schedule:work
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('app:process-recurring')->daily();
+        $schedule->command('app:process-recurring')
+                 ->everyMinute()
+                 ->withoutOverlapping()
+                 ->appendOutputTo(storage_path('logs/recurring.log'));
     }
 
     /**
