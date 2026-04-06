@@ -23,7 +23,7 @@ class BudgetExceededNotification extends Notification
 
     public function via($notifiable): array
     {
-        return ['mail'];
+        return ['mail', 'database'];
     }
 
     public function toMail($notifiable): MailMessage
@@ -37,5 +37,16 @@ class BudgetExceededNotification extends Notification
                 'han_muc' => $this->hanMuc,
                 'ngay' => now()->format('d/m/Y'),
             ]);
+    }
+
+    public function toArray($notifiable): array
+    {
+        return [
+            'title' => 'Vượt ngân sách: ' . $this->danhMucTen,
+            'message' => 'Bạn đã chi tiêu ' . number_format($this->daChiTieu, 0, ',', '.') . ' VNĐ, vượt hạn mức ' . number_format($this->hanMuc, 0, ',', '.') . ' VNĐ của tháng này.',
+            'type' => 'budget_exceeded',
+            'icon' => 'warning',
+            'action_url' => route('ngansach'),
+        ];
     }
 }

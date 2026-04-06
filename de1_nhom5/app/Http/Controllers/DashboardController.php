@@ -19,6 +19,21 @@ class DashboardController extends Controller
         $startOfMonth = $now->copy()->startOfMonth();
         $endOfMonth = $now->copy()->endOfMonth();
 
+        // Check if guest
+        if (!$userId) {
+            return view('dashboard', [
+                'availableBalance' => 0,
+                'monthlyIncome' => 0,
+                'monthlyExpense' => 0,
+                'savingsRate' => 0,
+                'categoryData' => collect([]),
+                'days' => array_map(fn($i) => Carbon::today()->subDays(6-$i)->format('d/m'), range(0, 6)),
+                'incomeTrends' => array_fill(0, 7, 0),
+                'expenseTrends' => array_fill(0, 7, 0),
+                'recentActivity' => collect([])
+            ]);
+        }
+
         // 1. Overall Balance
         $totalIncome = KhoanThu::where('nguoi_dung_id', $userId)->sum('so_tien');
         $totalExpense = GiaoDich::where('nguoi_dung_id', $userId)->sum('so_tien');

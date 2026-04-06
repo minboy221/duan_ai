@@ -126,6 +126,10 @@
                 <span class="material-symbols-outlined" {{ request()->routeIs('recurring.index') ? 'style=font-variation-settings:\'FILL\'1;' : '' }}>event_repeat</span>
                 Định kỳ
             </a>
+            <a class="group flex items-center gap-3 px-6 py-3 transition-all font-['Manrope'] text-sm font-semibold {{ request()->routeIs('vnpay.index') ? 'text-[#24389c] dark:text-[#3f51b5] relative before:content-[\'\'] before:absolute before:left-0 before:w-1 before:h-6 before:bg-[#24389c] before:rounded-full bg-white/40' : 'text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-[#24389c] hover:bg-white/50' }}" href="{{ route('vnpay.index') }}">
+                <span class="material-symbols-outlined" {{ request()->routeIs('vnpay.index') ? 'style=font-variation-settings:\'FILL\'1;' : '' }}>payments</span>
+                VNPay Sandbox
+            </a>
         </nav>
         <div class="mt-auto pt-6 border-t border-primary/5">
             <a class="group flex items-center gap-3 px-6 py-3 transition-all font-['Manrope'] text-sm font-semibold {{ request()->routeIs('danhmuc.index') ? 'text-[#24389c] dark:text-[#3f51b5] relative before:content-[\'\'] before:absolute before:left-0 before:w-1 before:h-6 before:bg-[#24389c] before:rounded-full bg-white/40' : 'text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-[#24389c] hover:bg-white/50' }}" href="{{ route('danhmuc.index') }}">
@@ -168,9 +172,16 @@
             </div>
             <div class="flex items-center gap-4">
                 <div class="flex items-center gap-2">
-                    <button class="p-2 rounded-full hover:bg-[#f1efff] dark:hover:bg-[#1e273d] transition-colors cursor-pointer active:opacity-80">
+                    <a href="{{ route('notifications.index') }}" class="relative p-2 rounded-full hover:bg-[#f1efff] dark:hover:bg-[#1e273d] transition-colors cursor-pointer active:opacity-80">
                         <span class="material-symbols-outlined text-on-surface-variant">notifications</span>
-                    </button>
+                        @auth
+                            @if(Auth::user()->unreadNotifications->count() > 0)
+                                <span class="absolute top-1 right-1 w-4 h-4 bg-error text-[10px] text-white font-bold rounded-full flex items-center justify-center border-2 border-background animate-pulse">
+                                    {{ Auth::user()->unreadNotifications->count() }}
+                                </span>
+                            @endif
+                        @endauth
+                    </a>
                     <a href="{{ route('profile.edit') }}" class="p-2 rounded-full hover:bg-[#f1efff] dark:hover:bg-[#1e273d] transition-colors cursor-pointer active:opacity-80 flex items-center justify-center">
                         <span class="material-symbols-outlined text-on-surface-variant">settings</span>
                     </a>
@@ -207,5 +218,58 @@
     </main>
 
     @yield('scripts')
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Function to format numbers with commas
+            function formatNumber(n) {
+                return n.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            }
+
+            // Function to strip commas
+            function stripCommas(s) {
+                return s.replace(/,/g, "");
+            }
+
+            const moneyInputs = document.querySelectorAll('.money-input');
+            
+            moneyInputs.forEach(input => {
+                // Initialize existing values
+                if (input.value) {
+                    input.value = formatNumber(input.value);
+                }
+
+                input.addEventListener('input', function(e) {
+                    const originalCursorPosition = e.target.selectionStart;
+                    const originalLength = e.target.value.length;
+                    
+                    // Format the value
+                    const formattedValue = formatNumber(e.target.value);
+                    e.target.value = formattedValue;
+                    
+                    // Adjust cursor position
+                    const newLength = formattedValue.length;
+                    const cursorAdjustment = newLength - originalLength;
+                    e.target.setSelectionRange(originalCursorPosition + cursorAdjustment, originalCursorPosition + cursorAdjustment);
+                });
+
+                // Prevent non-numeric characters except for control keys
+                input.addEventListener('keypress', function(e) {
+                    if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) {
+                        e.preventDefault();
+                    }
+                });
+            });
+
+            // Handle form submission to strip commas
+            document.querySelectorAll('form').forEach(form => {
+                form.addEventListener('submit', function() {
+                    form.querySelectorAll('.money-input').forEach(input => {
+                        input.value = stripCommas(input.value);
+                    });
+                });
+            });
+        });
+    </script>
 </body>
 </html>

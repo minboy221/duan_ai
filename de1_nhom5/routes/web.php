@@ -16,7 +16,7 @@ use App\Http\Controllers\ProfileController;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', [DashboardController::class, 'index'])->middleware('auth')->name('dashboard');
+Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/phan-tich-ai', function () { return view('phantichAi'); })->name('phantich-ai');
 Route::get('/tro-ly-giao-dich-ai', function () { return view('TroligiaodichAi'); })->name('tro-ly-giao-dich-ai');
 Route::get('/huong-dan', function () { return view('huongdan'); })->name('huongdan');
@@ -78,5 +78,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/password/send-otp', [ProfileController::class, 'sendPasswordOtp'])->name('profile.password.send-otp');
     Route::get('/profile/password/verify', [ProfileController::class, 'showPasswordOtpForm'])->name('profile.password.verify');
     Route::post('/profile/password/verify', [ProfileController::class, 'verifyPasswordOtp'])->name('profile.password.verify.post');
+
+    // Notifications
+    Route::get('/thong-bao', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/thong-bao/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/thong-bao/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+    Route::delete('/thong-bao/{id}', [\App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
+
+    // VNPay Demo
+    Route::get('/vnpay', [\App\Http\Controllers\VNPayController::class, 'index'])->name('vnpay.index');
+    Route::post('/vnpay/pay', [\App\Http\Controllers\VNPayController::class, 'createPayment'])->name('vnpay.pay');
+    Route::get('/vnpay/return', [\App\Http\Controllers\VNPayController::class, 'vnpayReturn'])->name('vnpay.return');
 });
 

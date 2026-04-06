@@ -140,7 +140,7 @@
 
             <div>
                 <label class="block text-sm font-semibold mb-2">Số tiền (VNĐ)</label>
-                <input type="number" name="so_tien" value="{{ old('so_tien') }}" min="1" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('so_tien') border border-error bg-error-container/10 @enderror">
+                <input type="text" name="so_tien" value="{{ old('so_tien') }}" class="money-input w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('so_tien') border border-error bg-error-container/10 @enderror" placeholder="0">
                 @error('so_tien')
                     <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
                 @enderror

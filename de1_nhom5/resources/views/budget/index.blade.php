@@ -137,7 +137,7 @@
 
             <div>
                 <label class="block text-sm font-semibold mb-2">Hạn mức (VNĐ)</label>
-                <input type="number" name="so_tien_han_muc" value="{{ old('so_tien_han_muc') }}" min="1" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('so_tien_han_muc') border border-error bg-error-container/10 @enderror" placeholder="Ví dụ: 5000000">
+                <input type="text" name="so_tien_han_muc" value="{{ old('so_tien_han_muc') }}" class="money-input w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary @error('so_tien_han_muc') border border-error bg-error-container/10 @enderror" placeholder="0">
                 @error('so_tien_han_muc')
                     <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
                 @enderror

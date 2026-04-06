@@ -17,3 +17,9 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+// VNPay Integration
+Route::prefix('vnpay')->group(function () {
+    Route::post('/payment', [\App\Http\Controllers\VNPayController::class, 'createPayment'])->middleware('auth:sanctum');
+    Route::get('/vnpay-ipn', [\App\Http\Controllers\VNPayController::class, 'vnpayIPN']);
+});
