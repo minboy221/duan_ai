@@ -132,10 +132,13 @@
                 <span class="material-symbols-outlined">help_outline</span>
                 Hỗ trợ
             </a>
-            <a class="group flex items-center gap-3 px-6 py-3 text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-tertiary transition-all font-['Manrope'] text-sm font-semibold" href="#">
-                <span class="material-symbols-outlined">logout</span>
-                Đăng xuất
-            </a>
+            <form action="{{ route('logout') }}" method="POST">
+                @csrf
+                <button type="submit" class="w-full text-left group flex items-center gap-3 px-6 py-3 text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-tertiary transition-all font-['Manrope'] text-sm font-semibold">
+                    <span class="material-symbols-outlined">logout</span>
+                    Đăng xuất
+                </button>
+            </form>
         </div>
     </aside>
 
@@ -160,8 +163,8 @@
                 <div class="h-8 w-[1px] bg-outline-variant/30 mx-2"></div>
                 <div class="flex items-center gap-3">
                     <div class="text-right hidden sm:block">
-                        <p class="text-xs font-bold text-on-surface">Alex Nguyen</p>
-                        <p class="text-[10px] text-on-surface-variant">Premium Member</p>
+                        <p class="text-xs font-bold text-on-surface">{{ Auth::check() ? Auth::user()->ho_ten : 'Khách' }}</p>
+                        <p class="text-[10px] text-on-surface-variant">Thành viên</p>
                     </div>
                     <img alt="User profile" class="w-10 h-10 rounded-full object-cover border-2 border-primary-fixed" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8Bl3zltjNmW2TecOpEh6CAsni8U_bWOA9Z-7nRV8VXE3TvaxvKErkXo7ogLxx549qw0EsGdm5wVsMM9HWiuK4IQJIV3RNLz9FYEzdgAmhv0FuJpLXZJ9PoSAwKYXlYDg7nFOUQ6ZvAR7bWih7fIdJ7CEuwsPOYyrGQ9z-5MSAFGtEQtsLCo5rejfAKGXxQEMx_JTnuvsMZDTWeI2Y_jpG-XNYfoGf816ohYMjBxJOjmZGQHeJfxv_y1gbWbDG9RcSUqMH2bZgpzE"/>
                 </div>

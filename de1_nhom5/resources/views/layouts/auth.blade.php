@@ -84,6 +84,11 @@
             background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(12px);
         }
+        /* Hide default Edge/IE password reveal button to fix overlap */
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear {
+            display: none;
+        }
     </style>
     @yield('head')
 </head>
