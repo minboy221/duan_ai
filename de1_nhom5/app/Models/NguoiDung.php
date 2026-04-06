@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
-class NguoiDung extends Model
+class NguoiDung extends Authenticatable
 {
-    use HasFactory;
+    use HasApiTokens, HasFactory, Notifiable;
 
     protected $table = 'nguoi_dung';
 
@@ -17,6 +19,9 @@ class NguoiDung extends Model
         'mat_khau',
         'tien_te',
         'ngay_tao',
+        'otp',
+        'otp_expires_at',
+        'email_verified_at',
     ];
 
     const CREATED_AT = 'ngay_tao';
@@ -24,6 +29,16 @@ class NguoiDung extends Model
     protected $hidden = [
         'mat_khau',
     ];
+
+    public function getAuthPasswordName()
+    {
+        return 'mat_khau';
+    }
+
+    public function getAuthPassword()
+    {
+        return $this->mat_khau;
+    }
 
     public function danhMucs()
     {

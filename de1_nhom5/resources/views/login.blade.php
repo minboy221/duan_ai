@@ -33,7 +33,22 @@
             <h1 class="text-3xl font-headline font-bold text-on-surface tracking-tight mb-2">Chào mừng trở lại</h1>
             <p class="text-on-surface-variant">Vui lòng nhập thông tin để truy cập tài khoản của bạn.</p>
         </div>
-        <form class="space-y-6">
+        <form class="space-y-6" method="POST" action="{{ route('login.post') }}">
+            @csrf
+            @if ($errors->any())
+                <div class="p-3 bg-red-100/50 text-red-600 rounded-xl text-sm">
+                    <ul class="list-disc pl-5">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+            @if (session('success'))
+                <div class="p-3 bg-green-100/50 text-green-700 rounded-xl text-sm">
+                    {{ session('success') }}
+                </div>
+            @endif
             <div>
                 <label class="block text-sm font-label font-semibold text-on-surface mb-2" for="email">Email</label>
                 <input class="w-full px-4 py-3 rounded-xl border-none bg-surface-container-low text-on-surface focus:ring-2 focus:ring-primary-container transition-all placeholder:text-outline-variant" id="email" name="email" placeholder="curator@finance.vn" type="email"/>
@@ -41,12 +56,12 @@
             <div>
                 <div class="flex justify-between items-center mb-2">
                     <label class="block text-sm font-label font-semibold text-on-surface" for="password">Mật khẩu</label>
-                    <a class="text-xs font-semibold text-primary hover:text-primary-container transition-colors" href="#">Quên mật khẩu?</a>
+                    <a class="text-xs font-semibold text-primary hover:text-primary-container transition-colors" href="{{ route('forgot-password') }}">Quên mật khẩu?</a>
                 </div>
                 <div class="relative">
                     <input class="w-full px-4 py-3 rounded-xl border-none bg-surface-container-low text-on-surface focus:ring-2 focus:ring-primary-container transition-all placeholder:text-outline-variant" id="password" name="password" placeholder="••••••••" type="password"/>
-                    <button class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors" type="button">
-                        <span class="material-symbols-outlined text-sm" data-icon="visibility">visibility</span>
+                    <button id="toggle-password" class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors" type="button">
+                        <span class="material-symbols-outlined text-sm" id="toggle-icon">visibility</span>
                     </button>
                 </div>
             </div>
@@ -78,4 +93,25 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleBtn = document.getElementById('toggle-password');
+        const passwordInput = document.getElementById('password');
+        const toggleIcon = document.getElementById('toggle-icon');
+
+        if (toggleBtn && passwordInput) {
+            toggleBtn.addEventListener('click', function() {
+                // Toggle type
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                
+                // Toggle icon
+                toggleIcon.textContent = type === 'password' ? 'visibility' : 'visibility_off';
+            });
+        }
+    });
+</script>
 @endsection

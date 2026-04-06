@@ -51,7 +51,17 @@
                 <div class="flex-grow border-t border-outline-variant/10"></div>
             </div>
             <!-- Registration Form -->
-            <form class="space-y-5">
+            <form class="space-y-5" method="POST" action="{{ route('dangky.post') }}">
+                @csrf
+                @if ($errors->any())
+                    <div class="p-3 bg-red-100/50 text-red-600 rounded-xl text-sm">
+                        <ul class="list-disc pl-5">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
                 <div class="space-y-1">
                     <label class="text-xs font-bold text-outline-variant uppercase tracking-wider ml-1" for="fullname">Họ và tên</label>
                     <input class="w-full px-4 py-3.5 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all text-on-surface placeholder:text-outline/40" id="fullname" name="fullname" placeholder="Nguyễn Văn A" type="text"/>
