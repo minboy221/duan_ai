@@ -20,7 +20,7 @@ use App\Http\Controllers\NotificationController;
 */
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-Route::get('/phan-tich-ai', function () { return view('phantichAi'); })->name('phantich-ai');
+Route::get('/phan-tich-ai', [\App\Http\Controllers\AiAnalysisController::class, 'index'])->name('phantich-ai');
 Route::get('/tro-ly-giao-dich-ai', function () { return view('TroligiaodichAi'); })->name('tro-ly-giao-dich-ai');
 Route::get('/huong-dan', function () { return view('huongdan'); })->name('huongdan');
 
@@ -77,6 +77,7 @@ Route::middleware('auth')->group(function () {
     
     // Phân Tích AI
     Route::post('/ai/phan-tich', [\App\Http\Controllers\AiAnalysisController::class, 'analyzeHabits'])->name('ai.phan_tich');
+    Route::post('/ai/nhap-lieu', [\App\Http\Controllers\AiAnalysisController::class, 'quickInput'])->name('ai.nhap_lieu');
     
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

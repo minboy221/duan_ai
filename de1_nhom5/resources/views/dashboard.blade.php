@@ -69,6 +69,24 @@
         </div>
     </div>
 
+    <!-- AI Assistant Bar -->
+    <div class="mb-8 bg-surface-container-lowest rounded-2xl p-4 border border-primary/20 shadow-lg shadow-primary/5">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-2xl animate-pulse">auto_awesome</span>
+            </div>
+            <div class="flex-1 relative">
+                <input type="text" id="aiQuickInput" 
+                    placeholder="Thử gõ: 'Ăn trưa 50k' hoặc 'Lương tháng 10tr'..." 
+                    class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 pr-12 focus:ring-2 focus:ring-primary text-sm font-medium transition-all">
+                <button id="btnAiSubmit" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center hover:bg-primary/90 transition-colors">
+                    <span class="material-symbols-outlined text-sm">send</span>
+                </button>
+            </div>
+        </div>
+        <div id="aiInputStatus" class="hidden mt-2 ml-16 text-[10px] font-bold"></div>
+    </div>
+
     <!-- Bento Grid Dashboard -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <!-- Chart: Performance Matrix -->
@@ -153,7 +171,7 @@
                     <div class="flex items-center justify-between group cursor-pointer text-left">
                         <div class="flex items-center gap-4 text-left">
                             <div class="w-10 h-10 rounded-full flex items-center justify-center {{ $activity->type == 'thu' ? 'bg-secondary/10 text-secondary' : 'bg-tertiary/10 text-tertiary' }}">
-                                <span class="material-symbols-outlined">{{ $activity->danhMuc->biu_tuong ?? ($activity->type == 'thu' ? 'payments' : 'shopping_cart') }}</span>
+                                <span class="material-symbols-outlined">{{ $activity->danhMuc->bieu_tuong ?? ($activity->type == 'thu' ? 'payments' : 'shopping_cart') }}</span>
                             </div>
                             <div>
                                 <p class="text-sm font-bold group-hover:text-primary transition-colors text-left">
@@ -387,6 +405,60 @@
                     btnAnalyzeAi.innerHTML = originalBtnText;
                     btnAnalyzeAi.disabled = false;
                 }
+            });
+        }
+
+        // --- AI Quick Input Logic ---
+        const aiQuickInput = document.getElementById('aiQuickInput');
+        const btnAiSubmit = document.getElementById('btnAiSubmit');
+        const aiInputStatus = document.getElementById('aiInputStatus');
+
+        async function handleAiInput() {
+            const val = aiQuickInput.value.trim();
+            if (!val) return;
+
+            // Loading state
+            btnAiSubmit.disabled = true;
+            btnAiSubmit.innerHTML = '<span class="material-symbols-outlined text-sm animate-spin">refresh</span>';
+            aiInputStatus.classList.remove('hidden', 'text-error', 'text-secondary');
+            aiInputStatus.classList.add('text-primary');
+            aiInputStatus.innerText = 'AI đang xử lý...';
+
+            try {
+                const response = await fetch('{{ route("ai.nhap_lieu") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ input: val })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    aiInputStatus.classList.replace('text-primary', 'text-secondary');
+                    aiInputStatus.innerText = '✓ ' + result.message;
+                    aiQuickInput.value = '';
+                    
+                    // Optional: Refresh some dashboard stats or just reload after a delay
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                aiInputStatus.classList.replace('text-primary', 'text-error');
+                aiInputStatus.innerText = '✕ ' + error.message;
+            } finally {
+                btnAiSubmit.disabled = false;
+                btnAiSubmit.innerHTML = '<span class="material-symbols-outlined text-sm">send</span>';
+            }
+        }
+
+        if (btnAiSubmit) btnAiSubmit.addEventListener('click', handleAiInput);
+        if (aiQuickInput) {
+            aiQuickInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleAiInput();
             });
         }
 
