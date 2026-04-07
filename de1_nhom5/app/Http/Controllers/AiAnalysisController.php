@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\GiaoDich;
 use App\Models\PhanTichAi;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class AiAnalysisController extends Controller
 {
@@ -62,40 +63,95 @@ class AiAnalysisController extends Controller
             ->with('danhMuc')
             ->get();
 
-        $lifestyleKeys = ['Ăn uống', 'Giải trí', 'Mua sắm', 'Du lịch', 'Làm đẹp', 'Thể thao'];
-        $fixedKeys = ['Tiền nhà', 'Điện nước', 'Internet', 'Xăng xe', 'Điện thoại', 'Bảo hiểm'];
-        $savingsKeys = ['Tiết kiệm', 'Đầu tư', 'Kho an toàn', 'Vàng', 'Chứng khoán'];
+        $lifestyleKeywords = ['ăn', 'uống', 'giải trí', 'mua sắm', 'du lịch', 'làm đẹp', 'phim', 'quà', 'chơi', 'tiêu vặt', 'nhậu', 'cafe', 'thời trang'];
+        $fixedKeywords = ['nhà', 'điện', 'nước', 'internet', 'xăng', 'học phí', 'bảo hiểm', 'nợ', 'thoại', 'cáp', 'rác', 'phí'];
+        $savingsKeywords = ['tiết kiệm', 'đầu tư', 'vàng', 'chứng khoán', 'heo', 'gửi', 'tích lũy'];
 
         $lifestyleTotal = 0;
         $fixedTotal = 0;
         $savingsTotal = 0;
+        $otherTotal = 0;
 
         foreach ($expenses as $ex) {
-            $catName = $ex->danhMuc->ten_danh_muc ?? '';
-            if (in_array($catName, $lifestyleKeys)) $lifestyleTotal += $ex->so_tien;
-            elseif (in_array($catName, $fixedKeys)) $fixedTotal += $ex->so_tien;
-            elseif (in_array($catName, $savingsKeys)) $savingsTotal += $ex->so_tien;
+            $catName = mb_strtolower($ex->danhMuc->ten_danh_muc ?? '');
+            
+            $matched = false;
+            foreach ($lifestyleKeywords as $key) {
+                if (Str::contains($catName, $key)) {
+                    $lifestyleTotal += $ex->so_tien;
+                    $matched = true;
+                    break;
+                }
+            }
+            if ($matched) continue;
+
+            foreach ($fixedKeywords as $key) {
+                if (Str::contains($catName, $key)) {
+                    $fixedTotal += $ex->so_tien;
+                    $matched = true;
+                    break;
+                }
+            }
+            if ($matched) continue;
+
+            foreach ($savingsKeywords as $key) {
+                if (Str::contains($catName, $key)) {
+                    $savingsTotal += $ex->so_tien;
+                    $matched = true;
+                    break;
+                }
+            }
+            if ($matched) continue;
+
+            $otherTotal += $ex->so_tien;
         }
 
-        $totalSpent = $lifestyleTotal + $fixedTotal + $savingsTotal ?: 1; // avoid /0
+        $totalSpent = $lifestyleTotal + $fixedTotal + $savingsTotal + $otherTotal ?: 1;
         $percentages = [
             'lifestyle' => round(($lifestyleTotal / $totalSpent) * 100),
             'fixed' => round(($fixedTotal / $totalSpent) * 100),
             'savings' => round(($savingsTotal / $totalSpent) * 100),
+            'other' => round(($otherTotal / $totalSpent) * 100),
         ];
 
-        // 2. Anomaly Detection (Simplified)
+        // 2. Anomaly Detection (Enhanced)
         $anomalies = [];
+        $totalIncome = \App\Models\KhoanThu::where('nguoi_dung_id', $user->id)
+            ->whereBetween('ngay_nhan', [$monthStart, $monthEnd])
+            ->sum('so_tien');
+            
+        $avgIncome = $totalIncome ?: 5000000; // default 5M if no income recorded
+
         foreach ($expenses as $ex) {
-            if ($ex->so_tien > 500000) {
+            // Case 1: Large transaction (> 20% of monthly income)
+            if ($ex->so_tien > ($avgIncome * 0.2)) {
                 $anomalies[] = [
-                    'title' => $ex->danhMuc->ten_danh_muc ?? 'Chi tiêu',
-                    'reason' => 'SỐ TIỀN LỚN',
-                    'detail' => 'Giao dịch này cao hơn mức trung bình ngày.',
+                    'title' => $ex->danhMuc->ten_danh_muc ?? 'Chi tiêu đột xuất',
+                    'reason' => 'SỐ TIỀN RẤT LỚN',
+                    'detail' => 'Giao dịch này chiếm hơn 20% ngân sách tháng của bạn.',
                     'amount' => $ex->so_tien,
                     'date' => $ex->ngay_giao_dich,
-                    'icon' => $ex->danhMuc->bieu_tuong ?? 'shopping_bag'
+                    'icon' => 'warning'
                 ];
+            }
+            // Case 2: Potential duplicates (same amount, same category, same day)
+            $duplicates = $expenses->where('danh_muc_id', $ex->danh_muc_id)
+                ->where('so_tien', $ex->so_tien)
+                ->where('ngay_giao_dich', $ex->ngay_giao_dich)
+                ->count();
+            if ($duplicates > 1) {
+                // Check if already in anomalies to avoid double warning
+                $exists = collect($anomalies)->where('amount', $ex->so_tien)->where('date', $ex->ngay_giao_dich)->where('reason', 'TRÙNG LẶP')->first();
+                if (!$exists) {
+                    $anomalies[] = [
+                        'title' => $ex->danhMuc->ten_danh_muc,
+                        'reason' => 'TRÙNG LẶP',
+                        'detail' => 'Phát hiện nhiều giao dịch giống hệt nhau trong cùng một ngày.',
+                        'amount' => $ex->so_tien,
+                        'date' => $ex->ngay_giao_dich,
+                        'icon' => 'content_copy'
+                    ];
+                }
             }
         }
 
@@ -310,13 +366,20 @@ class AiAnalysisController extends Controller
                 return "- {$e->ten_danh_muc}: " . number_format($e->tong_tien, 0, ',', '.') . " VNĐ ({$pct}%)";
             })->implode("\n");
 
+            $monthlySavingsGoals = \App\Models\MucTieuTietKiem::where('nguoi_dung_id', $user->id)->get();
+            $savingsContext = $monthlySavingsGoals->map(fn($g) => "- {$g->ten_muc_tieu}: Đã có " . number_format($g->so_tien_hien_tai, 0, ',', '.') . " / " . number_format($g->so_tien_muc_tieu, 0, ',', '.') . " VNĐ")->implode("\n");
+
             $contextInfo = "Dữ liệu tài chính tháng " . Carbon::now()->format('m/Y') . " của người dùng:\n"
                 . "- Tổng thu nhập: " . number_format($monthlyIncome, 0, ',', '.') . " VNĐ\n"
                 . "- Tổng chi tiêu: " . number_format($totalExpense, 0, ',', '.') . " VNĐ\n"
-                . "- Số dư ròng: " . number_format($monthlyIncome - $totalExpense, 0, ',', '.') . " VNĐ\n";
+                . "- Số dư ròng (Thu nhập - Chi tiêu): " . number_format($monthlyIncome - $totalExpense, 0, ',', '.') . " VNĐ\n";
             
             if ($expenseBreakdown) {
                 $contextInfo .= "\nChi tiết chi tiêu theo danh mục:\n" . $expenseBreakdown;
+            }
+
+            if ($savingsContext) {
+                $contextInfo .= "\n\nCác mục tiêu tiết kiệm đang thực hiện:\n" . $savingsContext;
             }
 
             $systemInstruction = "Bạn là Curator AI — một chuyên gia tài chính cá nhân thông minh, thân thiện và chuyên nghiệp. "
@@ -324,8 +387,9 @@ class AiAnalysisController extends Controller
                 . "Dưới đây là dữ liệu tài chính hiện tại của người dùng:\n\n"
                 . $contextInfo . "\n\n"
                 . "Hãy trả lời câu hỏi của người dùng dựa trên dữ liệu này. "
+                . "Hãy là một 'Financial Coach' thực thụ: Đưa ra nhận xét khách quan, khen ngợi nếu họ tiết kiệm tốt, và nhắc nhở nếu chi tiêu vượt quá thu nhập. "
                 . "Sử dụng ngôn ngữ tiếng Việt, ngắn gọn, rõ ràng. "
-                . "Trình bày bằng markdown khi cần. "
+                . "Trình bày bằng markdown (bullet points, bold text) để dễ đọc. "
                 . "Nếu câu hỏi không liên quan đến tài chính, hãy lịch sự từ chối và gợi ý câu hỏi phù hợp.";
 
             $aiText = $this->callOpenRouter($systemInstruction, $prompt, 0.7, 1024);

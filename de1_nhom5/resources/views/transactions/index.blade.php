@@ -97,6 +97,10 @@
                 @endforelse
             </ul>
         </table>
+        
+        <div class="px-6 border-t border-outline-variant/10">
+            {{ $transactions->links() }}
+        </div>
     </div>
 </div>
 

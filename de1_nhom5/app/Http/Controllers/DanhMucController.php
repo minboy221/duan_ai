@@ -14,7 +14,7 @@ class DanhMucController extends Controller
         $danhMucs = DanhMuc::where('nguoi_dung_id', Auth::id())
             ->orderBy('loai', 'asc')
             ->orderBy('ten_danh_muc', 'asc')
-            ->get();
+            ->paginate(30);
 
         return view('danhmuc.index', compact('danhMucs'));
     }

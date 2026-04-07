@@ -23,7 +23,7 @@ class StoreSavingsGoalRequest extends FormRequest
             'ten_muc_tieu' => 'required|string|max:255',
             'so_tien_muc_tieu' => 'required|numeric|min:1',
             'so_tien_hien_tai' => 'nullable|numeric|min:0',
-            'han_chot' => 'required|date'
+            'han_chot' => 'required|date|after_or_equal:today'
         ]; }
 
     public function messages(): array {
