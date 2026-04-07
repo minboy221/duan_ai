@@ -114,6 +114,7 @@ class AiAnalysisController extends Controller
             'other' => round(($otherTotal / $totalSpent) * 100),
         ];
 
+        // 2. Anomaly Detection (Simplified)
         // 2. Anomaly Detection (Enhanced)
         $anomalies = [];
         $totalIncome = \App\Models\KhoanThu::where('nguoi_dung_id', $user->id)
@@ -221,6 +222,15 @@ class AiAnalysisController extends Controller
                     . "Hãy phân tích thói quen tiêu dùng, đưa ra kết luận và lời khuyên cho tôi.";
 
             $aiText = $this->callOpenRouter($systemInstruction, $prompt);
+
+            if (!empty($aiText)) {
+                PhanTichAi::create([
+                    'nguoi_dung_id' => $user->id,
+                    'loai_phan_tich' => 'thoi_quen_tieu_dung',
+                    'noi_dung' => $aiText,
+                    'ngay_tao' => Carbon::now(),
+                ]);
+
 
             if (!empty($aiText)) {
                 PhanTichAi::create([
@@ -366,6 +376,10 @@ class AiAnalysisController extends Controller
                 return "- {$e->ten_danh_muc}: " . number_format($e->tong_tien, 0, ',', '.') . " VNĐ ({$pct}%)";
             })->implode("\n");
 
+            $contextInfo = "Dữ liệu tài chính tháng " . Carbon::now()->format('m/Y') . " của người dùng:\n"
+                . "- Tổng thu nhập: " . number_format($monthlyIncome, 0, ',', '.') . " VNĐ\n"
+                . "- Tổng chi tiêu: " . number_format($totalExpense, 0, ',', '.') . " VNĐ\n"
+                . "- Số dư ròng: " . number_format($monthlyIncome - $totalExpense, 0, ',', '.') . " VNĐ\n";
             $monthlySavingsGoals = \App\Models\MucTieuTietKiem::where('nguoi_dung_id', $user->id)->get();
             $savingsContext = $monthlySavingsGoals->map(fn($g) => "- {$g->ten_muc_tieu}: Đã có " . number_format($g->so_tien_hien_tai, 0, ',', '.') . " / " . number_format($g->so_tien_muc_tieu, 0, ',', '.') . " VNĐ")->implode("\n");
 
@@ -387,6 +401,8 @@ class AiAnalysisController extends Controller
                 . "Dưới đây là dữ liệu tài chính hiện tại của người dùng:\n\n"
                 . $contextInfo . "\n\n"
                 . "Hãy trả lời câu hỏi của người dùng dựa trên dữ liệu này. "
+                . "Sử dụng ngôn ngữ tiếng Việt, ngắn gọn, rõ ràng. "
+                . "Trình bày bằng markdown khi cần. "
                 . "Hãy là một 'Financial Coach' thực thụ: Đưa ra nhận xét khách quan, khen ngợi nếu họ tiết kiệm tốt, và nhắc nhở nếu chi tiêu vượt quá thu nhập. "
                 . "Sử dụng ngôn ngữ tiếng Việt, ngắn gọn, rõ ràng. "
                 . "Trình bày bằng markdown (bullet points, bold text) để dễ đọc. "
@@ -414,6 +430,119 @@ class AiAnalysisController extends Controller
 
         } catch (\Exception $e) {
             Log::error("CustomPrompt error: " . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Lỗi hệ thống: ' . $e->getMessage()], 500);
+        }
+    }
+    public function analyzeReceipt(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => 'Vui lòng đăng nhập'], 401);
+            }
+
+            $request->validate([
+                'receipt_image' => 'required|mimes:jpeg,png,jpg,webp|max:5120', // 5MB max
+            ]);
+
+            $file = $request->file('receipt_image');
+            $imageData = base64_encode(file_get_contents($file->path()));
+            $mimeType = $file->getMimeType();
+
+            $apiKey = env('GEMINI_API_KEY');
+            if (empty($apiKey)) {
+                return response()->json(['success' => false, 'message' => 'Chưa cấu hình GEMINI_API_KEY'], 500);
+            }
+
+            // Get user's categories
+            $categories = \App\Models\DanhMuc::where('nguoi_dung_id', $user->id)->get(['id', 'ten_danh_muc', 'loai']);
+            $catList = $categories->map(fn($c) => "{$c->ten_danh_muc} ({$c->loai})")->implode(', ');
+
+            $systemPrompt = "Bạn là trợ lý tài chính. Phân tích ảnh hóa đơn/biên lai và trả về JSON chuẩn: {\"so_tien\": number, \"ten_danh_muc\": string, \"ghi_chu\": string, \"loai\": \"chi\"|\"thu\"}.
+            Danh sách danh mục hiện có: [{$catList}].
+            Nếu hóa đơn là thanh toán mua hàng, thì loại thường là 'chi'. Ghi chú nên ngắn gọn mô tả giao dịch.
+            CHỈ trả về JSON, không có markdown hay text khác.";
+
+            $payload = [
+                "contents" => [
+                    [
+                        "parts" => [
+                            ["text" => $systemPrompt],
+                            [
+                                "inline_data" => [
+                                    "mime_type" => $mimeType,
+                                    "data" => $imageData
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ];
+
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+            ])->timeout(30)->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$apiKey}", $payload);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $rawJson = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
+                
+                if ($rawJson) {
+                    Log::info('Gemini Receipt Input Response: ' . $rawJson);
+
+                    // Clean markdown
+                    $cleanJson = preg_replace('/^```json\s*|\s*```$/m', '', trim($rawJson));
+                    $parsed = json_decode($cleanJson, true);
+
+                    if ($parsed && isset($parsed['so_tien'])) {
+                        $targetCategoryName = trim($parsed['ten_danh_muc']);
+                        $loai = isset($parsed['loai']) ? ($parsed['loai'] === 'thu' ? 'thu' : 'chi') : 'chi';
+
+                        $cat = \App\Models\DanhMuc::where('nguoi_dung_id', $user->id)
+                            ->where('ten_danh_muc', 'like', $targetCategoryName)
+                            ->first();
+
+                        if (!$cat) {
+                            $cat = \App\Models\DanhMuc::create([
+                                'nguoi_dung_id' => $user->id, 
+                                'ten_danh_muc' => $targetCategoryName, 
+                                'loai' => $loai,
+                                'bieu_tuong' => 'receipt'
+                            ]);
+                        }
+
+                        if ($loai === 'thu') {
+                            \App\Models\KhoanThu::create([
+                                'nguoi_dung_id' => $user->id,
+                                'danh_muc_id' => $cat->id,
+                                'so_tien' => $parsed['so_tien'],
+                                'ngay_nhan' => Carbon::now(),
+                                'nguon_thu' => $parsed['ghi_chu'] ?? 'Nhập qua hình ảnh',
+                            ]);
+                        } else {
+                            \App\Models\GiaoDich::create([
+                                'nguoi_dung_id' => $user->id,
+                                'danh_muc_id' => $cat->id,
+                                'so_tien' => $parsed['so_tien'],
+                                'ngay_giao_dich' => Carbon::now(),
+                                'ghi_chu' => $parsed['ghi_chu'] ?? 'Nhập qua hình ảnh',
+                            ]);
+                        }
+
+                        return response()->json([
+                            'success' => true,
+                            'message' => "Đã ghi nhận: " . number_format($parsed['so_tien']) . "đ vào mục " . $cat->ten_danh_muc,
+                            'data' => $parsed
+                        ]);
+                    }
+                }
+            }
+
+            Log::error('Gemini Receipt API Error: ' . $response->body());
+            return response()->json(['success' => false, 'message' => 'Lỗi xử lý hình ảnh hoặc AI không hiểu. Vui lòng thử lại.'], 500);
+            
+        } catch (\Exception $e) {
+            Log::error('analyzeReceipt Exception: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Lỗi hệ thống: ' . $e->getMessage()], 500);
         }
     }

@@ -20,8 +20,6 @@ class GiaoDichDinhKy extends Model
         'ngay_bat_dau',
         'ngay_ket_thuc',
         'trang_thai',
-        'lan_thuc_hien_cuoi',
-        'ngay_chay_tiep_theo',
     ];
 
     public function nguoiDung()
