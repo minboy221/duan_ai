@@ -86,6 +86,10 @@
             </div>
         </div>
     </div>
+
+    <div class="mt-8">
+        {{ $danhMucs->links() }}
+    </div>
 </div>
 
 <!-- Modal -->

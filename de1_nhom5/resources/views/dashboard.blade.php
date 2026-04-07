@@ -48,6 +48,11 @@
                     <p class="text-xs text-outline mb-1 text-left">Chi tiêu vận hành</p>
                     <p class="text-xl font-bold text-tertiary tabular-nums">-{{ number_format($monthlyExpense, 0, ',', '.') }} VNĐ</p>
                 </div>
+                <div class="h-10 w-[1px] bg-outline-variant/20 self-center"></div>
+                <div>
+                    <p class="text-xs text-outline mb-1 text-left">Tổng tích luỹ</p>
+                    <p class="text-xl font-bold text-primary tabular-nums">{{ number_format($totalSavings, 0, ',', '.') }} VNĐ</p>
+                </div>
             </div>
         </div>
         <div class="lg:col-span-5 flex justify-end">

@@ -15,9 +15,31 @@
         </button>
     </div>
 
+    <!-- Available Balance Context -->
+    <div class="bg-surface-container-low p-4 rounded-2xl border border-outline-variant/10 flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-primary/10 text-primary rounded-full flex items-center justify-center">
+                <span class="material-symbols-outlined">account_balance_wallet</span>
+            </div>
+            <div>
+                <p class="text-[10px] text-outline font-bold uppercase">Vốn khả dụng (Có thể nộp)</p>
+                <p class="text-xl font-bold text-on-surface">{{ number_format($availableBalance, 0, ',', '.') }} VNĐ</p>
+            </div>
+        </div>
+        <div class="text-xs text-outline italic max-w-xs text-right">
+            Số tiền này chưa bao gồm các khoản đã nằm trong heo đất tiết kiệm.
+        </div>
+    </div>
+
     @if(session('success'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-xl relative" role="alert">
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-xl relative mb-6" role="alert">
             <span class="block sm:inline">{{ session('success') }}</span>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl relative mb-6" role="alert">
+            <span class="block sm:inline">{{ session('error') }}</span>
         </div>
     @endif
 
@@ -107,6 +129,10 @@
             </div>
         @endforelse
     </div>
+
+    <div class="mt-8">
+        {{ $goals->links() }}
+    </div>
 </div>
 
 <!-- Add Money Modal -->
@@ -161,7 +187,7 @@
 
             <div>
                 <label class="block text-sm font-semibold mb-2">Mục tiêu đạt vào (Hạn chót)</label>
-                <input type="date" name="han_chot" value="{{ old('han_chot') }}" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-secondary @error('han_chot') border border-error bg-error-container/10 @enderror">
+                <input type="date" name="han_chot" value="{{ old('han_chot') }}" min="{{ date('Y-m-d') }}" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-secondary @error('han_chot') border border-error bg-error-container/10 @enderror">
                 @error('han_chot')
                     <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
                 @enderror
