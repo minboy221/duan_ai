@@ -15,7 +15,7 @@ class DanhMuc extends Model
         'nguoi_dung_id',
         'ten_danh_muc',
         'loai',
-        'biu_tuong',
+        'bieu_tuong',
     ];
 
     public function nguoiDung()

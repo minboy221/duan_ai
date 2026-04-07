@@ -137,4 +137,27 @@ class TransactionController extends Controller
 
         return redirect()->route('transactions.index')->with('success', 'Đã thêm khoản thu thành công.');
     }
+
+    public function export()
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\TransactionsExport, 'LichSuGiaoDich.xlsx');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv'
+        ], [
+            'file.required' => 'Vui lòng chọn file Excel để nhập.',
+            'file.mimes' => 'Chỉ chấp nhận file định dạng xlsx, xls, hoặc csv.'
+        ]);
+
+        try {
+            \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\TransactionsImport, $request->file('file'));
+            return redirect()->route('transactions.index')->with('success', 'Đã nhập dữ liệu thành công.');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Lỗi import Excel: ' . $e->getMessage());
+            return redirect()->route('transactions.index')->with('error', 'Có lỗi xảy ra khi nhập file, vui lòng kiểm tra lại định dạng chuẩn.');
+        }
+    }
 }
