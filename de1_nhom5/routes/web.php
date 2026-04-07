@@ -78,6 +78,7 @@ Route::middleware('auth')->group(function () {
     // Phân Tích AI
     Route::post('/ai/phan-tich', [\App\Http\Controllers\AiAnalysisController::class, 'analyzeHabits'])->name('ai.phan_tich');
     Route::post('/ai/nhap-lieu', [\App\Http\Controllers\AiAnalysisController::class, 'quickInput'])->name('ai.nhap_lieu');
+    Route::post('/ai/hoi-dap', [\App\Http\Controllers\AiAnalysisController::class, 'customPrompt'])->name('ai.hoi_dap');
     
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
