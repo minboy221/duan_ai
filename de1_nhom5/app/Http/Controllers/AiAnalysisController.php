@@ -231,15 +231,6 @@ class AiAnalysisController extends Controller
                     'ngay_tao' => Carbon::now(),
                 ]);
 
-
-            if (!empty($aiText)) {
-                PhanTichAi::create([
-                    'nguoi_dung_id' => $user->id,
-                    'loai_phan_tich' => 'thoi_quen_tieu_dung',
-                    'noi_dung' => $aiText,
-                    'ngay_tao' => Carbon::now(),
-                ]);
-
                 return response()->json([
                     'success' => true,
                     'data' => [
