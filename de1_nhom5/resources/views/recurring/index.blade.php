@@ -8,7 +8,7 @@
     <div class="flex justify-between items-end mb-8">
         <div>
             <h2 class="text-3xl font-extrabold tracking-tight text-on-surface">Lập lịch Giao dịch</h2>
-            <p class="text-outline text-sm mt-1">Tự động hoá các khoản thu chi lặp lại hàng ngày, tuần, tháng</p>
+            <p class="text-outline text-sm mt-1">Quản lý các khoản thu chi lặp lại hàng ngày, tuần, tháng</p>
         </div>
         <button onclick="openModal()" class="bg-primary text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg hover:bg-primary/90 transition-all flex items-center gap-2">
             <span class="material-symbols-outlined" data-icon="update">add</span> Thêm Lịch mới
@@ -29,7 +29,6 @@
                     <th class="px-6 py-4 font-semibold">Loại & Danh mục</th>
                     <th class="px-6 py-4 font-semibold">Số tiền</th>
                     <th class="px-6 py-4 font-semibold">Chu kỳ</th>
-                    <th class="px-6 py-4 font-semibold">Lần chạy tiếp</th>
                     <th class="px-6 py-4 font-semibold">Trạng thái</th>
                     <th class="px-6 py-4 font-semibold text-right">Thao tác</th>
                 </tr>
@@ -55,22 +54,13 @@
                         </td>
                         <td class="px-6 py-4">
                             <span class="px-3 py-1 bg-surface-container rounded-full text-xs font-medium border border-outline-variant/20">
-                                {{ $item->tenChuKy() }}
+                                @switch($item->chu_ky)
+                                    @case('hang_ngay') Hàng ngày @break
+                                    @case('hang_tuan') Hàng tuần @break
+                                    @case('hang_thang') Hàng tháng @break
+                                    @case('hang_nam') Hàng năm @break
+                                @endswitch
                             </span>
-                        </td>
-                        <td class="px-6 py-4">
-                            @if($item->ngay_chay_tiep_theo)
-                                <div>
-                                    <p class="text-sm font-semibold text-primary">{{ \Carbon\Carbon::parse($item->ngay_chay_tiep_theo)->format('d/m/Y') }}</p>
-                                    @if($item->lan_thuc_hien_cuoi)
-                                        <p class="text-[10px] text-outline">Lần cuối: {{ \Carbon\Carbon::parse($item->lan_thuc_hien_cuoi)->format('d/m/Y') }}</p>
-                                    @else
-                                        <p class="text-[10px] text-outline italic">Chưa chạy lần nào</p>
-                                    @endif
-                                </div>
-                            @else
-                                <span class="text-xs text-outline italic">Chờ thiết lập</span>
-                            @endif
                         </td>
                         <td class="px-6 py-4">
                             <form action="{{ route('recurring.toggle', $item->id) }}" method="POST">
@@ -102,7 +92,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-12 text-center text-outline">
+                        <td colspan="5" class="px-6 py-12 text-center text-outline">
                             <span class="material-symbols-outlined text-4xl mb-3 block" data-icon="event_repeat">event_repeat</span>
                             <p>Chưa có giao dịch định kỳ nào được thiết lập.</p>
                         </td>
@@ -110,15 +100,6 @@
                 @endforelse
             </tbody>
         </table>
-    </div>
-
-    <!-- Info Card: Hướng dẫn Scheduler -->
-    <div class="bg-inverse-primary/10 border border-inverse-primary/20 rounded-2xl p-5 flex items-start gap-4">
-        <span class="material-symbols-outlined text-primary text-2xl mt-0.5">info</span>
-        <div>
-            <p class="font-bold text-sm text-on-surface">Hệ thống tự động</p>
-            <p class="text-xs text-outline mt-1">Giao dịch sẽ được tạo tự động khi đến hạn bởi scheduler. Bạn sẽ nhận thông báo qua <strong>web</strong> và <strong>email</strong> mỗi khi giao dịch được tạo.</p>
-        </div>
     </div>
 </div>
 
@@ -189,11 +170,6 @@
                 @error('ngay_bat_dau')
                     <p class="text-[10px] text-error font-bold mt-1 ml-1 animate-in fade-in slide-in-from-top-1">{{ $message }}</p>
                 @enderror
-            </div>
-
-            <div>
-                <label class="block text-sm font-semibold mb-2">Ngày kết thúc <span class="text-outline font-normal">(tuỳ chọn)</span></label>
-                <input type="date" name="ngay_ket_thuc" value="{{ old('ngay_ket_thuc') }}" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary">
             </div>
 
             <div class="pt-4">
