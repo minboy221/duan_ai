@@ -16,7 +16,7 @@ class RecurringTransactionController extends Controller
         $recurrings = GiaoDichDinhKy::where('nguoi_dung_id', $userId)
             ->with('danhMuc')
             ->orderBy('ngay_bat_dau', 'desc')
-            ->get();
+            ->paginate(10);
             
         $danhMucs = DanhMuc::where('nguoi_dung_id', $userId)->get();
 

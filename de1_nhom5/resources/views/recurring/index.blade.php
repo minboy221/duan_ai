@@ -100,6 +100,10 @@
                 @endforelse
             </tbody>
         </table>
+        
+        <div class="px-6 border-t border-outline-variant/10">
+            {{ $recurrings->links() }}
+        </div>
     </div>
 </div>
 

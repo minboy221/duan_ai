@@ -11,6 +11,8 @@ use App\Models\GiaoDich;
 use App\Models\KhoanThu;
 use App\Models\DanhMuc;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 
 class TransactionController extends Controller
 {
@@ -54,7 +56,20 @@ class TransactionController extends Controller
             return $item;
         });
 
-        $transactions = $expenses->concat($incomes)->sortByDesc('date')->values();
+        $transactionsCollection = $expenses->concat($incomes)->sortByDesc('date')->values();
+        
+        // Manual pagination for the combined collection
+        $currentPage = Paginator::resolveCurrentPage('page');
+        $perPage = 10;
+        $currentItems = $transactionsCollection->slice(($currentPage - 1) * $perPage, $perPage)->all();
+
+        $transactions = new LengthAwarePaginator(
+            $currentItems,
+            $transactionsCollection->count(),
+            $perPage,
+            $currentPage,
+            ['path' => Paginator::resolveCurrentPath(), 'query' => $request->query()]
+        );
         
         $danhMucs = DanhMuc::where('nguoi_dung_id', $userId)->get();
 

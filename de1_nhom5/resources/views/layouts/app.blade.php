@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>@yield('title', 'The Fiscal Curator')</title>
+    <title>@yield('title', 'Ví Chill')</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -96,10 +96,10 @@
                     <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_balance</span>
                 </div>
                 <div>
-                    <h2 class="text-xl font-black text-[#24389c] dark:text-[#3f51b5] leading-tight">Fiscal Curator</h2>
-                    <p class="font-['Manrope'] text-[10px] font-semibold uppercase tracking-widest text-[#24389c]/60">Elite Wealth Mgmt</p>
+                    <h2 class="text-xl font-black text-[#24389c] dark:text-[#3f51b5] leading-tight">Ví Chill</h2>
+                    <p class="font-['Manrope'] text-[10px] font-semibold uppercase tracking-widest text-[#24389c]/60">Quản lý tài chính thông minh</p>
                 </div>
-            </div>
+            </div
         </div>
         <nav class="flex-1 space-y-1">
             <a class="group flex items-center gap-3 px-6 py-3 transition-all font-['Manrope'] text-sm font-semibold {{ request()->routeIs('dashboard') ? 'text-[#24389c] dark:text-[#3f51b5] relative before:content-[\'\'] before:absolute before:left-0 before:w-1 before:h-6 before:bg-[#24389c] before:rounded-full bg-white/40' : 'text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-[#24389c] hover:bg-white/50' }}" href="{{ route('dashboard') }}">
@@ -127,6 +127,10 @@
                 Định kỳ
             </a>
 
+            <a class="group flex items-center gap-3 px-6 py-3 transition-all font-['Manrope'] text-sm font-semibold {{ request()->routeIs('vnpay.index') ? 'text-[#24389c] dark:text-[#3f51b5] relative before:content-[\'\'] before:absolute before:left-0 before:w-1 before:h-6 before:bg-[#24389c] before:rounded-full bg-white/40' : 'text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-[#24389c] hover:bg-white/50' }}" href="{{ route('vnpay.index') }}">
+                <span class="material-symbols-outlined" {{ request()->routeIs('vnpay.index') ? 'style=font-variation-settings:\'FILL\'1;' : '' }}>payments</span>
+                Nạp tiền vào ví
+            </a>
         </nav>
         <div class="mt-auto pt-6 border-t border-primary/5">
             <a class="group flex items-center gap-3 px-6 py-3 transition-all font-['Manrope'] text-sm font-semibold {{ request()->routeIs('danhmuc.index') ? 'text-[#24389c] dark:text-[#3f51b5] relative before:content-[\'\'] before:absolute before:left-0 before:w-1 before:h-6 before:bg-[#24389c] before:rounded-full bg-white/40' : 'text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-[#24389c] hover:bg-white/50' }}" href="{{ route('danhmuc.index') }}">

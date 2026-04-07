@@ -48,6 +48,11 @@
                     <p class="text-xs text-outline mb-1 text-left">Chi tiêu vận hành</p>
                     <p class="text-xl font-bold text-tertiary tabular-nums">-{{ number_format($monthlyExpense, 0, ',', '.') }} VNĐ</p>
                 </div>
+                <div class="h-10 w-[1px] bg-outline-variant/20 self-center"></div>
+                <div>
+                    <p class="text-xs text-outline mb-1 text-left">Tổng tích luỹ</p>
+                    <p class="text-xl font-bold text-primary tabular-nums">{{ number_format($totalSavings, 0, ',', '.') }} VNĐ</p>
+                </div>
             </div>
         </div>
         <div class="lg:col-span-5 flex justify-end">
@@ -69,23 +74,6 @@
         </div>
     </div>
 
-    <!-- AI Assistant Bar -->
-    <div class="mb-8 bg-surface-container-lowest rounded-2xl p-4 border border-primary/20 shadow-lg shadow-primary/5">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center shrink-0">
-                <span class="material-symbols-outlined text-2xl animate-pulse">auto_awesome</span>
-            </div>
-            <div class="flex-1 relative">
-                <input type="text" id="aiQuickInput" 
-                    placeholder="Thử gõ: 'Ăn trưa 50k' hoặc 'Lương tháng 10tr'..." 
-                    class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 pr-12 focus:ring-2 focus:ring-primary text-sm font-medium transition-all">
-                <button id="btnAiSubmit" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center hover:bg-primary/90 transition-colors">
-                    <span class="material-symbols-outlined text-sm">send</span>
-                </button>
-            </div>
-        </div>
-        <div id="aiInputStatus" class="hidden mt-2 ml-16 text-[10px] font-bold"></div>
-    </div>
 
     <!-- Bento Grid Dashboard -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

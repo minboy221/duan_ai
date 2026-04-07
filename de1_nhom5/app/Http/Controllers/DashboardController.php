@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\GiaoDich;
 use App\Models\KhoanThu;
 use App\Models\DanhMuc;
+use App\Models\MucTieuTietKiem;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -40,7 +41,9 @@ class DashboardController extends Controller
         // 1. Overall Balance
         $totalIncome = KhoanThu::where('nguoi_dung_id', $userId)->sum('so_tien');
         $totalExpense = GiaoDich::where('nguoi_dung_id', $userId)->sum('so_tien');
-        $availableBalance = $totalIncome - $totalExpense;
+        $totalSavings = MucTieuTietKiem::where('nguoi_dung_id', $userId)->sum('so_tien_hien_tai');
+        
+        $availableBalance = $totalIncome - $totalExpense - $totalSavings;
 
         // 2. Monthly Stats
         $monthlyIncome = KhoanThu::where('nguoi_dung_id', $userId)
@@ -138,6 +141,7 @@ class DashboardController extends Controller
 
         return view('dashboard', compact(
             'availableBalance', 
+            'totalSavings',
             'monthlyIncome', 
             'monthlyExpense', 
             'savingsRate',

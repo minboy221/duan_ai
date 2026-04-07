@@ -39,6 +39,15 @@
                         <div class="h-full bg-gradient-to-r from-tertiary to-tertiary-container rounded-full transition-all duration-1000" style="width: {{ $percentages['savings'] }}%"></div>
                     </div>
                 </div>
+                <div class="space-y-2">
+                    <div class="flex justify-between items-end">
+                        <span class="text-lg font-semibold">Phát sinh & Khác</span>
+                        <span class="text-2xl font-bold tabular-nums text-outline">{{ $percentages['other'] }}%</span>
+                    </div>
+                    <div class="h-3 w-full bg-surface-container rounded-full overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-outline to-outline-variant rounded-full transition-all duration-1000" style="width: {{ $percentages['other'] }}%"></div>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="lg:col-span-5 bg-primary rounded-3xl p-10 text-on-primary flex flex-col justify-between shadow-2xl relative overflow-hidden">
