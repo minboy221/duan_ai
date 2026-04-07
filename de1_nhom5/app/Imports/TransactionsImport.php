@@ -72,7 +72,7 @@ class TransactionsImport implements ToCollection, WithHeadingRow
                     'loai'          => $categoryType
                 ],
                 [
-                    'biu_tuong' => 'folder'
+                    'bieu_tuong' => 'folder'
                 ]
             );
 

@@ -60,15 +60,15 @@ class TransactionController extends Controller
 
         if ($danhMucs->isEmpty()) {
             $defaultCategories = [
-                ['ten_danh_muc' => 'Lương', 'loai' => 'thu', 'biu_tuong' => 'payments'],
-                ['ten_danh_muc' => 'Kinh doanh', 'loai' => 'thu', 'biu_tuong' => 'storefront'],
-                ['ten_danh_muc' => 'Thưởng', 'loai' => 'thu', 'biu_tuong' => 'card_giftcard'],
-                ['ten_danh_muc' => 'Ăn uống', 'loai' => 'chi', 'biu_tuong' => 'restaurant'],
-                ['ten_danh_muc' => 'Di chuyển', 'loai' => 'chi', 'biu_tuong' => 'directions_car'],
-                ['ten_danh_muc' => 'Mua sắm', 'loai' => 'chi', 'biu_tuong' => 'shopping_bag'],
-                ['ten_danh_muc' => 'Hoá đơn', 'loai' => 'chi', 'biu_tuong' => 'receipt_long'],
-                ['ten_danh_muc' => 'Giải trí', 'loai' => 'chi', 'biu_tuong' => 'sports_esports'],
-                ['ten_danh_muc' => 'Y tế', 'loai' => 'chi', 'biu_tuong' => 'medical_services'],
+                ['ten_danh_muc' => 'Lương', 'loai' => 'thu', 'bieu_tuong' => 'payments'],
+                ['ten_danh_muc' => 'Kinh doanh', 'loai' => 'thu', 'bieu_tuong' => 'storefront'],
+                ['ten_danh_muc' => 'Thưởng', 'loai' => 'thu', 'bieu_tuong' => 'card_giftcard'],
+                ['ten_danh_muc' => 'Ăn uống', 'loai' => 'chi', 'bieu_tuong' => 'restaurant'],
+                ['ten_danh_muc' => 'Di chuyển', 'loai' => 'chi', 'bieu_tuong' => 'directions_car'],
+                ['ten_danh_muc' => 'Mua sắm', 'loai' => 'chi', 'bieu_tuong' => 'shopping_bag'],
+                ['ten_danh_muc' => 'Hoá đơn', 'loai' => 'chi', 'bieu_tuong' => 'receipt_long'],
+                ['ten_danh_muc' => 'Giải trí', 'loai' => 'chi', 'bieu_tuong' => 'sports_esports'],
+                ['ten_danh_muc' => 'Y tế', 'loai' => 'chi', 'bieu_tuong' => 'medical_services'],
             ];
 
             foreach ($defaultCategories as $cat) {

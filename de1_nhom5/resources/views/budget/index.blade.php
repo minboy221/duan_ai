@@ -47,7 +47,7 @@
                 <div class="flex justify-between items-start mb-4 relative z-10">
                     <div class="flex items-center gap-3">
                         <div class="h-10 w-10 rounded-full bg-surface-container flex items-center justify-center text-primary">
-                            <span class="material-symbols-outlined">{{ $budget->danhMuc->biu_tuong ?? 'category' }}</span>
+                            <span class="material-symbols-outlined">{{ $budget->danhMuc->bieu_tuong ?? 'category' }}</span>
                         </div>
                         <div>
                             <h3 class="font-bold text-lg leading-tight">{{ $budget->danhMuc->ten_danh_muc }}</h3>
