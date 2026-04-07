@@ -17,6 +17,9 @@
             <a href="{{ route('transactions.export') }}" class="bg-surface-container-high text-on-surface px-4 py-2.5 rounded-xl font-bold shadow-sm border border-outline-variant/20 hover:bg-surface-container-highest transition-all flex items-center gap-2">
                 <span class="material-symbols-outlined text-green-600" data-icon="download">download</span> Xuất Excel
             </a>
+            <button onclick="document.getElementById('receipt-ai-modal').classList.remove('hidden')" class="bg-primary text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg hover:bg-primary/90 transition-all flex items-center gap-2">
+                <span class="material-symbols-outlined" data-icon="document_scanner">document_scanner</span> Quét Hóa Đơn AI
+            </button>
             <button onclick="document.getElementById('income-modal').classList.remove('hidden')" class="bg-secondary text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg hover:bg-secondary/90 transition-all flex items-center gap-2">
                 <span class="material-symbols-outlined" data-icon="add_circle">add_circle</span> Thêm khoản Thu
             </button>
@@ -231,4 +234,103 @@
         </form>
     </div>
 </div>
+<!-- Modal: AI Receipt Scanner -->
+<div id="receipt-ai-modal" class="fixed inset-0 bg-black/60 hidden backdrop-blur-sm z-50 flex items-center justify-center">
+    <div class="bg-surface-container-lowest p-8 rounded-3xl shadow-2xl w-full max-w-md border border-outline-variant/10 relative">
+        <button onclick="document.getElementById('receipt-ai-modal').classList.add('hidden')" class="absolute top-4 right-4 text-outline hover:text-on-surface">
+            <span class="material-symbols-outlined" data-icon="close">close</span>
+        </button>
+        <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center">
+                <span class="material-symbols-outlined" data-icon="document_scanner">document_scanner</span>
+            </div>
+            <h3 class="text-xl font-bold text-on-surface">Quét Hóa Đơn AI</h3>
+        </div>
+        
+        <div class="bg-surface-container-low p-4 rounded-xl mb-6 text-sm text-outline border border-primary/20">
+            <p>Tải lên ảnh chụp hóa đơn hoặc biên lai để AI phân tích và lưu tự động vào danh sách. (Hỗ trợ định dạng JPG, PNG, WEBP - tối đa 5MB).</p>
+        </div>
+
+        <form id="receipt-ai-form" class="space-y-4">
+            @csrf
+            <div>
+                <label class="block text-sm font-semibold mb-2">Chọn ảnh hóa đơn</label>
+                <input type="file" id="receipt_image" name="receipt_image" accept="image/png, image/jpeg, image/webp" required class="w-full bg-surface-container-low border border-dashed border-outline-variant/50 rounded-xl px-4 py-8 focus:ring-2 focus:ring-primary text-center file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer">
+            </div>
+            
+            <div id="ai-loading" class="hidden flex items-center gap-2 justify-center py-2 text-primary font-bold">
+                <span class="material-symbols-outlined animate-spin">refresh</span> Đang phân tích...
+            </div>
+            
+            <div id="ai-error" class="hidden text-sm text-error bg-error-container/10 p-3 rounded-xl border border-error/20"></div>
+
+            <div class="pt-4">
+                <button type="submit" id="btn-submit-ai" class="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-lg hover:bg-primary/90 transition-all flex justify-center items-center gap-2">
+                    <span class="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span> Phân tích
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.getElementById('receipt-ai-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const form = this;
+        const btnSubmit = document.getElementById('btn-submit-ai');
+        const loading = document.getElementById('ai-loading');
+        const errorDiv = document.getElementById('ai-error');
+        
+        btnSubmit.classList.add('hidden');
+        loading.classList.remove('hidden');
+        errorDiv.classList.add('hidden');
+        
+        const formData = new FormData(form);
+        
+        try {
+            const response = await fetch('{{ route("ai.analyze_receipt") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                // Create custom toast
+                const toast = document.createElement('div');
+                toast.className = 'fixed top-24 left-1/2 -translate-x-1/2 px-6 py-4 bg-primary/90 text-on-primary backdrop-blur-md rounded-2xl shadow-2xl flex items-center gap-3 z-[100] transition-all transform duration-500 opacity-0 -translate-y-10';
+                toast.innerHTML = `
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    <span class="font-semibold text-white tracking-wide">${result.message}</span>
+                `;
+                document.body.appendChild(toast);
+                
+                // Animate in
+                requestAnimationFrame(() => {
+                    toast.classList.remove('opacity-0', '-translate-y-10');
+                    toast.classList.add('opacity-100', 'translate-y-0');
+                });
+
+                // Reload after reading
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } else {
+                errorDiv.innerText = result.message || 'Đã có lỗi xảy ra.';
+                errorDiv.classList.remove('hidden');
+                btnSubmit.classList.remove('hidden');
+                loading.classList.add('hidden');
+            }
+        } catch (error) {
+            errorDiv.innerText = 'Lỗi kết nối hoặc xử lý.';
+            errorDiv.classList.remove('hidden');
+            btnSubmit.classList.remove('hidden');
+            loading.classList.add('hidden');
+        }
+    });
+</script>
 @endsection

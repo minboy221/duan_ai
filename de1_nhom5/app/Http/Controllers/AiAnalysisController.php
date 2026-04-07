@@ -353,4 +353,117 @@ class AiAnalysisController extends Controller
             return response()->json(['success' => false, 'message' => 'Lỗi hệ thống: ' . $e->getMessage()], 500);
         }
     }
+    public function analyzeReceipt(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => 'Vui lòng đăng nhập'], 401);
+            }
+
+            $request->validate([
+                'receipt_image' => 'required|mimes:jpeg,png,jpg,webp|max:5120', // 5MB max
+            ]);
+
+            $file = $request->file('receipt_image');
+            $imageData = base64_encode(file_get_contents($file->path()));
+            $mimeType = $file->getMimeType();
+
+            $apiKey = env('GEMINI_API_KEY');
+            if (empty($apiKey)) {
+                return response()->json(['success' => false, 'message' => 'Chưa cấu hình GEMINI_API_KEY'], 500);
+            }
+
+            // Get user's categories
+            $categories = \App\Models\DanhMuc::where('nguoi_dung_id', $user->id)->get(['id', 'ten_danh_muc', 'loai']);
+            $catList = $categories->map(fn($c) => "{$c->ten_danh_muc} ({$c->loai})")->implode(', ');
+
+            $systemPrompt = "Bạn là trợ lý tài chính. Phân tích ảnh hóa đơn/biên lai và trả về JSON chuẩn: {\"so_tien\": number, \"ten_danh_muc\": string, \"ghi_chu\": string, \"loai\": \"chi\"|\"thu\"}.
+            Danh sách danh mục hiện có: [{$catList}].
+            Nếu hóa đơn là thanh toán mua hàng, thì loại thường là 'chi'. Ghi chú nên ngắn gọn mô tả giao dịch.
+            CHỈ trả về JSON, không có markdown hay text khác.";
+
+            $payload = [
+                "contents" => [
+                    [
+                        "parts" => [
+                            ["text" => $systemPrompt],
+                            [
+                                "inline_data" => [
+                                    "mime_type" => $mimeType,
+                                    "data" => $imageData
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ];
+
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+            ])->timeout(30)->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$apiKey}", $payload);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $rawJson = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
+                
+                if ($rawJson) {
+                    Log::info('Gemini Receipt Input Response: ' . $rawJson);
+
+                    // Clean markdown
+                    $cleanJson = preg_replace('/^```json\s*|\s*```$/m', '', trim($rawJson));
+                    $parsed = json_decode($cleanJson, true);
+
+                    if ($parsed && isset($parsed['so_tien'])) {
+                        $targetCategoryName = trim($parsed['ten_danh_muc']);
+                        $loai = isset($parsed['loai']) ? ($parsed['loai'] === 'thu' ? 'thu' : 'chi') : 'chi';
+
+                        $cat = \App\Models\DanhMuc::where('nguoi_dung_id', $user->id)
+                            ->where('ten_danh_muc', 'like', $targetCategoryName)
+                            ->first();
+
+                        if (!$cat) {
+                            $cat = \App\Models\DanhMuc::create([
+                                'nguoi_dung_id' => $user->id, 
+                                'ten_danh_muc' => $targetCategoryName, 
+                                'loai' => $loai,
+                                'bieu_tuong' => 'receipt'
+                            ]);
+                        }
+
+                        if ($loai === 'thu') {
+                            \App\Models\KhoanThu::create([
+                                'nguoi_dung_id' => $user->id,
+                                'danh_muc_id' => $cat->id,
+                                'so_tien' => $parsed['so_tien'],
+                                'ngay_nhan' => Carbon::now(),
+                                'nguon_thu' => $parsed['ghi_chu'] ?? 'Nhập qua hình ảnh',
+                            ]);
+                        } else {
+                            \App\Models\GiaoDich::create([
+                                'nguoi_dung_id' => $user->id,
+                                'danh_muc_id' => $cat->id,
+                                'so_tien' => $parsed['so_tien'],
+                                'ngay_giao_dich' => Carbon::now(),
+                                'ghi_chu' => $parsed['ghi_chu'] ?? 'Nhập qua hình ảnh',
+                            ]);
+                        }
+
+                        return response()->json([
+                            'success' => true,
+                            'message' => "Đã ghi nhận: " . number_format($parsed['so_tien']) . "đ vào mục " . $cat->ten_danh_muc,
+                            'data' => $parsed
+                        ]);
+                    }
+                }
+            }
+
+            Log::error('Gemini Receipt API Error: ' . $response->body());
+            return response()->json(['success' => false, 'message' => 'Lỗi xử lý hình ảnh hoặc AI không hiểu. Vui lòng thử lại.'], 500);
+            
+        } catch (\Exception $e) {
+            Log::error('analyzeReceipt Exception: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Lỗi hệ thống: ' . $e->getMessage()], 500);
+        }
+    }
 }
