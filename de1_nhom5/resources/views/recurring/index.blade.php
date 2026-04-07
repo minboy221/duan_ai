@@ -8,7 +8,7 @@
     <div class="flex justify-between items-end mb-8">
         <div>
             <h2 class="text-3xl font-extrabold tracking-tight text-on-surface">Lập lịch Giao dịch</h2>
-            <p class="text-outline text-sm mt-1">Tự động hoá các khoản thu chi lặp lại hàng ngày, tuần, tháng</p>
+            <p class="text-outline text-sm mt-1">Quản lý các khoản thu chi lặp lại hàng ngày, tuần, tháng</p>
         </div>
         <button onclick="openModal()" class="bg-primary text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg hover:bg-primary/90 transition-all flex items-center gap-2">
             <span class="material-symbols-outlined" data-icon="update">add</span> Thêm Lịch mới

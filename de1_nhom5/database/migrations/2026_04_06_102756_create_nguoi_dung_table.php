@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('mat_khau');
             $table->string('tien_te');
+            $table->string('ngon_ngu')->default('vi');
+            $table->decimal('so_du_kho_an_toan', 15, 2)->default(0);
             $table->timestamp('ngay_tao')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });

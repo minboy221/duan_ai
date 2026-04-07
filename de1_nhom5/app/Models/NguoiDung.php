@@ -98,8 +98,5 @@ class NguoiDung extends Authenticatable
         return $this->hasMany(TongKetTaiChinh::class, 'nguoi_dung_id');
     }
 
-    public function vnPays()
-    {
-        return $this->hasMany(VNPay::class, 'nguoi_dung_id');
-    }
+
 }
