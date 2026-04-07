@@ -26,7 +26,7 @@ class DanhMucController extends Controller
             'nguoi_dung_id' => Auth::id(),
             'ten_danh_muc' => $request->ten_danh_muc,
             'loai' => $request->loai,
-            'biu_tuong' => $request->biu_tuong,
+            'bieu_tuong' => $request->bieu_tuong,
         ]);
 
         return redirect()->route('danhmuc.index')->with('success', 'Đã thêm danh mục mới thành công.');

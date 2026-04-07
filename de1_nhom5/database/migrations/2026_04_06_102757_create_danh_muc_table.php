@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('nguoi_dung_id')->constrained('nguoi_dung')->onDelete('cascade');
             $table->string('ten_danh_muc');
             $table->string('loai');
-            $table->string('biu_tuong');
+            $table->string('bieu_tuong');
             $table->timestamps();
         });
     }

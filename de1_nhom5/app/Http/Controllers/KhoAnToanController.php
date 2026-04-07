@@ -136,7 +136,7 @@ class KhoAnToanController extends Controller
 
                 $danhMucThu = \App\Models\DanhMuc::firstOrCreate(
                     ['nguoi_dung_id' => $user->id, 'ten_danh_muc' => 'Chi phí khẩn cấp', 'loai' => 'thu'],
-                    ['biu_tuong' => 'health_and_safety']
+                    ['bieu_tuong' => 'health_and_safety']
                 );
 
                 // Record as Income to increase main balance
