@@ -31,8 +31,9 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-    'gemini' => [
-        'api_key' => env('GEMINI_API_KEY'),
+    'openrouter' => [
+        'api_key' => env('OPENROUTER_API_KEY'),
+        'model' => env('OPENROUTER_MODEL', 'google/gemini-2.0-flash-001'),
     ],
 
 ];
