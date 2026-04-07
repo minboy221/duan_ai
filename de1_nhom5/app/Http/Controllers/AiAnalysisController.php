@@ -261,7 +261,8 @@ class AiAnalysisController extends Controller
             $categories = \App\Models\DanhMuc::where('nguoi_dung_id', $user->id)->get(['id', 'ten_danh_muc', 'loai']);
             $catList = $categories->map(fn($c) => "{$c->ten_danh_muc} ({$c->loai})")->implode(', ');
 
-            $systemPrompt = "Bạn là trợ lý tài chính. Phân tích câu nói của người dùng và trả về JSON chuẩn: {\"so_tien\": number, \"ten_danh_muc\": string, \"ghi_chu\": string, \"loai\": \"chi\"|\"thu\"}. 
+            $systemPrompt = "Bạn là trợ lý tài chính. Phân tích câu nói của người dùng và trả về JSON chuẩn: {\"so_tien\": number, \"ten_danh_muc\": string, \"ghi_chu\": string, \"loai\": \"chi\"}. 
+            Lưu ý: CHỈ được phép xử lý các khoản chi tiêu (loai: chi). Nếu nội dung là khoản thu, vẫn phải trả về loai: chi nhưng ghi chú là nội dung gốc.
             Danh sách danh mục hiện có: [{$catList}].
             Ví dụ: 'Ăn sáng 30k' -> {\"so_tien\": 30000, \"ten_danh_muc\": \"Ăn uống\", \"ghi_chu\": \"Ăn sáng\", \"loai\": \"chi\"}.
             CHỈ trả về JSON, không có markdown hay text khác.";
@@ -271,15 +272,15 @@ class AiAnalysisController extends Controller
             if ($rawJson) {
                 Log::info('OpenRouter QuickInput Raw Response: ' . $rawJson);
 
-                // Clean markdown if AI returns it
                 $cleanJson = preg_replace('/^```json\s*|\s*```$/m', '', trim($rawJson));
                 $parsed = json_decode($cleanJson, true);
 
                 if ($parsed && isset($parsed['so_tien'])) {
                     $targetCategoryName = trim($parsed['ten_danh_muc']);
-                    $loai = isset($parsed['loai']) ? ($parsed['loai'] === 'thu' ? 'thu' : 'chi') : 'chi';
+                    $loai = 'chi'; // Cưỡng ép chỉ là khoản chi theo yêu cầu user
 
                     $cat = \App\Models\DanhMuc::where('nguoi_dung_id', $user->id)
+                        ->where('loai', 'chi')
                         ->where('ten_danh_muc', 'like', $targetCategoryName)
                         ->first();
 
@@ -287,32 +288,22 @@ class AiAnalysisController extends Controller
                         $cat = \App\Models\DanhMuc::create([
                             'nguoi_dung_id' => $user->id, 
                             'ten_danh_muc' => $targetCategoryName, 
-                            'loai' => $loai,
-                            'bieu_tuong' => 'category'
+                            'loai' => 'chi',
+                            'bieu_tuong' => 'payments'
                         ]);
                     }
 
-                    if ($loai === 'thu') {
-                        \App\Models\KhoanThu::create([
-                            'nguoi_dung_id' => $user->id,
-                            'danh_muc_id' => $cat->id,
-                            'so_tien' => $parsed['so_tien'],
-                            'ngay_nhan' => now(),
-                            'nguon_thu' => $parsed['ghi_chu'] ?? 'Nhập liệu AI: ' . $input,
-                        ]);
-                    } else {
-                        \App\Models\GiaoDich::create([
-                            'nguoi_dung_id' => $user->id,
-                            'danh_muc_id' => $cat->id,
-                            'so_tien' => $parsed['so_tien'],
-                            'ngay_giao_dich' => now(),
-                            'ghi_chu' => $parsed['ghi_chu'] ?? 'Nhập liệu AI: ' . $input,
-                        ]);
-                    }
+                    \App\Models\GiaoDich::create([
+                        'nguoi_dung_id' => $user->id,
+                        'danh_muc_id' => $cat->id,
+                        'so_tien' => $parsed['so_tien'],
+                        'ngay_giao_dich' => now(),
+                        'ghi_chu' => $parsed['ghi_chu'] ?? 'Nhập liệu AI: ' . $input,
+                    ]);
 
                     return response()->json([
                         'success' => true,
-                        'message' => "Đã ghi nhận: " . number_format($parsed['so_tien']) . "đ vào mục " . $cat->ten_danh_muc,
+                        'message' => "Đã ghi nhận chi phí: " . number_format($parsed['so_tien']) . "đ vào mục " . $cat->ten_danh_muc,
                         'data' => $parsed
                     ]);
                 } else {

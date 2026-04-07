@@ -56,7 +56,12 @@ class TransactionController extends Controller
             return $item;
         });
 
-        $transactionsCollection = $expenses->concat($incomes)->sortByDesc('date')->values();
+        $transactionsCollection = $expenses->concat($incomes)->sort(function ($a, $b) {
+            if ($a->date === $b->date) {
+                return $b->id <=> $a->id;
+            }
+            return $b->date <=> $a->date;
+        })->values();
         
         // Manual pagination for the combined collection
         $currentPage = Paginator::resolveCurrentPage('page');

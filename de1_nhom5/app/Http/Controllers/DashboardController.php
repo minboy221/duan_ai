@@ -20,10 +20,10 @@ class DashboardController extends Controller
         $startOfMonth = $now->copy()->startOfMonth();
         $endOfMonth = $now->copy()->endOfMonth();
 
-        // Check if guest
         if (!$userId) {
             return view('dashboard', [
                 'availableBalance' => 0,
+                'totalSavings' => 0,
                 'monthlyIncome' => 0,
                 'monthlyExpense' => 0,
                 'savingsRate' => 0,
@@ -89,7 +89,8 @@ class DashboardController extends Controller
         $recentExpenses = GiaoDich::where('nguoi_dung_id', $userId)
             ->with('danhMuc')
             ->orderByDesc('ngay_giao_dich')
-            ->limit(3)
+            ->orderByDesc('id')
+            ->limit(10)
             ->get()
             ->map(function($item) {
                 $item->type = 'chi';
@@ -100,7 +101,8 @@ class DashboardController extends Controller
         $recentIncomes = KhoanThu::where('nguoi_dung_id', $userId)
             ->with('danhMuc')
             ->orderByDesc('ngay_nhan')
-            ->limit(3)
+            ->orderByDesc('id')
+            ->limit(10)
             ->get()
             ->map(function($item) {
                 $item->type = 'thu';
@@ -108,10 +110,12 @@ class DashboardController extends Controller
                 return $item;
             });
 
-        $recentActivity = $recentExpenses->concat($recentIncomes)
-            ->sortByDesc('date')
-            ->values()
-            ->take(5);
+        $recentActivity = $recentExpenses->concat($recentIncomes)->sort(function ($a, $b) {
+            if ($a->date === $b->date) {
+                return $b->id <=> $a->id;
+            }
+            return $b->date <=> $a->date;
+        })->values()->take(5);
 
         // 6. Expense Comparison (This Month vs Last Month)
         $monthDaysLabels = array_map(fn($i) => "Ngày $i", range(1, 31));

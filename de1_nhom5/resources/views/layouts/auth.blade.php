@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>@yield('title', 'Ví Chill')</title>
+    <title>@yield('title', 'The Fiscal Curator')</title>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -107,14 +107,14 @@
     <!-- Footer Component Integration -->
     <footer class="bg-[#faf8ff] dark:bg-[#131b2e] w-full py-8 border-t border-[#131b2e]/5 dark:border-[#faf8ff]/5">
         <div class="flex flex-col md:flex-row justify-between items-center px-6 max-w-7xl mx-auto gap-4">
-            <div class="text-lg font-bold text-[#24389c] font-headline">Ví Chill </div>
+            <div class="text-lg font-bold text-[#24389c] font-headline">The Fiscal Curator</div>
             <div class="flex gap-6">
                 <a class="text-[#131b2e]/40 dark:text-[#faf8ff]/40 font-['Inter'] text-sm tracking-normal hover:text-[#24389c] transition-colors duration-200" href="#">Điều khoản</a>
                 <a class="text-[#131b2e]/40 dark:text-[#faf8ff]/40 font-['Inter'] text-sm tracking-normal hover:text-[#24389c] transition-colors duration-200" href="#">Hỗ trợ</a>
                 <a class="text-[#131b2e]/40 dark:text-[#faf8ff]/40 font-['Inter'] text-sm tracking-normal hover:text-[#24389c] transition-colors duration-200" href="#">Liên hệ</a>
             </div>
             <div class="text-[#131b2e]/40 dark:text-[#faf8ff]/40 font-['Inter'] text-sm tracking-normal">
-                © 2024 Ví Chill. Bảo mật & Riêng tư.
+                © 2024 The Fiscal Curator. Bảo mật & Riêng tư.
             </div>
         </div>
     </footer>
