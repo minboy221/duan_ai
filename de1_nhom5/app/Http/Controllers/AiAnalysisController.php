@@ -12,6 +12,42 @@ use Carbon\Carbon;
 
 class AiAnalysisController extends Controller
 {
+    /**
+     * Helper: Call OpenRouter API (OpenAI-compatible)
+     */
+    private function callOpenRouter(string $systemPrompt, string $userMessage, float $temperature = 0.7, int $maxTokens = 1024): ?string
+    {
+        $apiKey = config('services.openrouter.api_key');
+        $model = config('services.openrouter.model', 'google/gemini-2.0-flash-001');
+
+        if (empty($apiKey)) {
+            throw new \Exception('Chưa cấu hình API Key. Vui lòng thêm OPENROUTER_API_KEY vào file .env');
+        }
+
+        $response = Http::withHeaders([
+            'Authorization' => "Bearer {$apiKey}",
+            'Content-Type' => 'application/json',
+            'HTTP-Referer' => config('app.url', 'http://localhost'),
+            'X-Title' => 'The Fiscal Curator',
+        ])->timeout(30)->post('https://openrouter.ai/api/v1/chat/completions', [
+            'model' => $model,
+            'messages' => [
+                ['role' => 'system', 'content' => $systemPrompt],
+                ['role' => 'user', 'content' => $userMessage],
+            ],
+            'temperature' => $temperature,
+            'max_tokens' => $maxTokens,
+        ]);
+
+        if ($response->successful()) {
+            $data = $response->json();
+            return $data['choices'][0]['message']['content'] ?? null;
+        }
+
+        Log::error('OpenRouter API Error: ' . $response->body());
+        return null;
+    }
+
     public function index()
     {
         $user = Auth::user();
@@ -49,8 +85,6 @@ class AiAnalysisController extends Controller
         ];
 
         // 2. Anomaly Detection (Simplified)
-        // - Large transactions (> 500k)
-        // - Duplicates (same amt, same day)
         $anomalies = [];
         foreach ($expenses as $ex) {
             if ($ex->so_tien > 500000) {
@@ -73,7 +107,6 @@ class AiAnalysisController extends Controller
         $avgDailyExpense = ($lifestyleTotal + $fixedTotal) / ($elapsedDays ?: 1);
         $forecastRemainingExpense = $avgDailyExpense * $remainingDays;
         
-        // Total Income this month
         $totalIncome = \App\Models\KhoanThu::where('nguoi_dung_id', $user->id)
             ->whereBetween('ngay_nhan', [$monthStart, $monthEnd])
             ->sum('so_tien');
@@ -96,12 +129,10 @@ class AiAnalysisController extends Controller
                 return response()->json(['success' => false, 'message' => 'Vui lòng đăng nhập'], 401);
             }
 
-            // Define the period: default last 30 days
             $days = $request->input('days', 30);
             $startDate = Carbon::now()->subDays($days)->startOfDay();
             $endDate = Carbon::now()->endOfDay();
 
-            // Fetch transactions for the user within the period, joined with categories to filter just expenses 'chi'
             $transactions = GiaoDich::where('giao_dich.nguoi_dung_id', $user->id)
                 ->whereBetween('giao_dich.ngay_giao_dich', [$startDate, $endDate])
                 ->join('danh_muc', 'giao_dich.danh_muc_id', '=', 'danh_muc.id')
@@ -117,10 +148,8 @@ class AiAnalysisController extends Controller
                 ]);
             }
 
-            // Calculate total spent
             $totalSpent = $transactions->sum('tong_tien');
 
-            // Format data into percentages for the prompt
             $expenseDetails = [];
             foreach ($transactions as $tx) {
                 $percentage = round(($tx->tong_tien / $totalSpent) * 100, 2);
@@ -128,12 +157,6 @@ class AiAnalysisController extends Controller
             }
             $expenseSummaryText = implode("\n", $expenseDetails);
 
-            $apiKey = config('services.gemini.api_key');
-            if (empty($apiKey)) {
-                return response()->json(['success' => false, 'message' => 'Thiếu cấu hình API Key Gemini.'], 500);
-            }
-
-            // Build the Prompt
             $systemInstruction = "Bạn là một chuyên gia tài chính cá nhân nhạy bén và thân thiện. Dựa vào số liệu chi phí, hãy phân tích thói quen tiêu dùng trong {$days} ngày qua và đưa ra nhận xét. Đừng quên đưa ra 1-2 lời khuyên cụ thể để cắt giảm hoặc tối ưu hóa nếu cần. Bạn hãy dùng ngôn từ ngắn gọn, rõ ràng, dễ hiểu và trình bày theo định dạng markdown.";
 
             $prompt = "Tổng chi tiêu của tôi trong {$days} ngày qua là: " . number_format($totalSpent, 0, ',', '.') . " VNĐ.\n"
@@ -141,56 +164,26 @@ class AiAnalysisController extends Controller
                     . $expenseSummaryText . "\n\n"
                     . "Hãy phân tích thói quen tiêu dùng, đưa ra kết luận và lời khuyên cho tôi.";
 
-            // Request logic to Gemini API
-            $response = Http::withHeaders([
-                'Content-Type' => 'application/json',
-            ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$apiKey}", [
-                'system_instruction' => [
-                    'parts' => [
-                        ['text' => $systemInstruction]
+            $aiText = $this->callOpenRouter($systemInstruction, $prompt);
+
+            if (!empty($aiText)) {
+                PhanTichAi::create([
+                    'nguoi_dung_id' => $user->id,
+                    'loai_phan_tich' => 'thoi_quen_tieu_dung',
+                    'noi_dung' => $aiText,
+                    'ngay_tao' => Carbon::now(),
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'analysis' => $aiText,
+                        'total_spent' => $totalSpent,
                     ]
-                ],
-                'contents' => [
-                    [
-                        'parts' => [
-                            ['text' => $prompt]
-                        ],
-                    ]
-                ],
-                'generationConfig' => [
-                    // Adjust if needed
-                    'temperature' => 0.7,
-                ]
-            ]);
-
-            if ($response->successful()) {
-                $data = $response->json();
-                
-                // Extract response text
-                $aiText = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
-
-                if (!empty($aiText)) {
-                    // Save the analysis
-                    $analysis = PhanTichAi::create([
-                        'nguoi_dung_id' => $user->id,
-                        'loai_phan_tich' => 'thoi_quen_tieu_dung',
-                        'noi_dung' => $aiText,
-                        // ngay_tao is automatically handled if defined correctly, but just in case:
-                        'ngay_tao' => Carbon::now(),
-                    ]);
-
-                    return response()->json([
-                        'success' => true,
-                        'data' => [
-                            'analysis' => $aiText,
-                            'total_spent' => $totalSpent,
-                        ]
-                    ]);
-                }
+                ]);
             }
 
-            Log::error('Gemini API Error: ' . $response->body());
-            return response()->json(['success' => false, 'message' => 'Không thể gọi Gemini API.'], 500);
+            return response()->json(['success' => false, 'message' => 'Không thể nhận phản hồi từ AI.'], 500);
 
         } catch (\Exception $e) {
             Log::error("AiAnalysisController error: " . $e->getMessage());
@@ -203,15 +196,9 @@ class AiAnalysisController extends Controller
         try {
             $user = Auth::user();
             $input = $request->input('input');
-            $apiKey = config('services.gemini.api_key');
 
             if (empty($input)) {
                 return response()->json(['success' => false, 'message' => 'Vui lòng nhập nội dung.'], 400);
-            }
-
-            if (empty($apiKey)) {
-                Log::error('Gemini API Key is missing in quickInput');
-                return response()->json(['success' => false, 'message' => 'Lỗi: Chưa cấu hình API Key.'], 500);
             }
 
             // Get user's categories for better mapping
@@ -220,41 +207,27 @@ class AiAnalysisController extends Controller
 
             $systemPrompt = "Bạn là trợ lý tài chính. Phân tích câu nói của người dùng và trả về JSON chuẩn: {\"so_tien\": number, \"ten_danh_muc\": string, \"ghi_chu\": string, \"loai\": \"chi\"|\"thu\"}. 
             Danh sách danh mục hiện có: [{$catList}].
-            Ví dụ: 'Ăn sáng 30k' -> {\"so_tien\": 30000, \"ten_danh_muc\": \"Ăn uống\", \"ghi_chu\": \"Ăn sáng\", \"loai\": \"chi\"}.";
+            Ví dụ: 'Ăn sáng 30k' -> {\"so_tien\": 30000, \"ten_danh_muc\": \"Ăn uống\", \"ghi_chu\": \"Ăn sáng\", \"loai\": \"chi\"}.
+            CHỈ trả về JSON, không có markdown hay text khác.";
 
-            $response = Http::withHeaders([
-                'Content-Type' => 'application/json',
-            ])->timeout(15)->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={$apiKey}", [
-                'contents' => [
-                    ['parts' => [['text' => "Instructions: {$systemPrompt}\nUser Input: {$input} "]]]
-                ],
-                'generationConfig' => [
-                    'temperature' => 0.1
-                ]
-            ]);
+            $rawJson = $this->callOpenRouter($systemPrompt, $input, 0.1, 256);
+            
+            if ($rawJson) {
+                Log::info('OpenRouter QuickInput Raw Response: ' . $rawJson);
 
-            if ($response->successful()) {
-                $resData = $response->json();
-                $rawJson = $resData['candidates'][0]['content']['parts'][0]['text'] ?? '';
-                
-                Log::info('Gemini QuickInput Raw Response: ' . $rawJson);
-
-                // Clean markdown if AI returns it (gemini-pro often adds ```json)
+                // Clean markdown if AI returns it
                 $cleanJson = preg_replace('/^```json\s*|\s*```$/m', '', trim($rawJson));
                 $parsed = json_decode($cleanJson, true);
 
                 if ($parsed && isset($parsed['so_tien'])) {
-                    // Normalize category name for matching
                     $targetCategoryName = trim($parsed['ten_danh_muc']);
                     $loai = isset($parsed['loai']) ? ($parsed['loai'] === 'thu' ? 'thu' : 'chi') : 'chi';
 
-                    // Find actual category ID (case insensitive search)
                     $cat = \App\Models\DanhMuc::where('nguoi_dung_id', $user->id)
                         ->where('ten_danh_muc', 'like', $targetCategoryName)
                         ->first();
 
                     if (!$cat) {
-                        // Create default if not found
                         $cat = \App\Models\DanhMuc::create([
                             'nguoi_dung_id' => $user->id, 
                             'ten_danh_muc' => $targetCategoryName, 
@@ -287,15 +260,96 @@ class AiAnalysisController extends Controller
                         'data' => $parsed
                     ]);
                 } else {
-                    Log::error('Gemini QuickInput Failed to parse JSON: ' . $rawJson);
+                    Log::error('OpenRouter QuickInput Failed to parse JSON: ' . $rawJson);
                 }
-            } else {
-                Log::error('Gemini QuickInput API Error: ' . $response->body());
             }
 
             return response()->json(['success' => false, 'message' => 'AI đang bận hoặc không hiểu yêu cầu, hãy thử lại bằng câu khác.'], 500);
         } catch (\Exception $e) {
             Log::error('QuickInput Exception: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Lỗi hệ thống: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Custom AI Prompt - users can ask any finance-related question
+     */
+    public function customPrompt(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => 'Vui lòng đăng nhập'], 401);
+            }
+
+            $prompt = $request->input('prompt');
+            if (empty($prompt)) {
+                return response()->json(['success' => false, 'message' => 'Vui lòng nhập câu hỏi.'], 400);
+            }
+
+            // Gather user's financial context
+            $monthStart = Carbon::now()->startOfMonth();
+            $monthEnd = Carbon::now()->endOfMonth();
+
+            $monthlyExpenses = GiaoDich::where('giao_dich.nguoi_dung_id', $user->id)
+                ->whereBetween('giao_dich.ngay_giao_dich', [$monthStart, $monthEnd])
+                ->join('danh_muc', 'giao_dich.danh_muc_id', '=', 'danh_muc.id')
+                ->selectRaw('danh_muc.ten_danh_muc, SUM(giao_dich.so_tien) as tong_tien')
+                ->groupBy('danh_muc.id', 'danh_muc.ten_danh_muc')
+                ->get();
+
+            $totalExpense = $monthlyExpenses->sum('tong_tien');
+
+            $monthlyIncome = \App\Models\KhoanThu::where('nguoi_dung_id', $user->id)
+                ->whereBetween('ngay_nhan', [$monthStart, $monthEnd])
+                ->sum('so_tien');
+
+            // Build context
+            $expenseBreakdown = $monthlyExpenses->map(function ($e) use ($totalExpense) {
+                $pct = $totalExpense > 0 ? round(($e->tong_tien / $totalExpense) * 100, 1) : 0;
+                return "- {$e->ten_danh_muc}: " . number_format($e->tong_tien, 0, ',', '.') . " VNĐ ({$pct}%)";
+            })->implode("\n");
+
+            $contextInfo = "Dữ liệu tài chính tháng " . Carbon::now()->format('m/Y') . " của người dùng:\n"
+                . "- Tổng thu nhập: " . number_format($monthlyIncome, 0, ',', '.') . " VNĐ\n"
+                . "- Tổng chi tiêu: " . number_format($totalExpense, 0, ',', '.') . " VNĐ\n"
+                . "- Số dư ròng: " . number_format($monthlyIncome - $totalExpense, 0, ',', '.') . " VNĐ\n";
+            
+            if ($expenseBreakdown) {
+                $contextInfo .= "\nChi tiết chi tiêu theo danh mục:\n" . $expenseBreakdown;
+            }
+
+            $systemInstruction = "Bạn là Curator AI — một chuyên gia tài chính cá nhân thông minh, thân thiện và chuyên nghiệp. "
+                . "Bạn có trách nhiệm giúp người dùng quản lý tài chính cá nhân hiệu quả. "
+                . "Dưới đây là dữ liệu tài chính hiện tại của người dùng:\n\n"
+                . $contextInfo . "\n\n"
+                . "Hãy trả lời câu hỏi của người dùng dựa trên dữ liệu này. "
+                . "Sử dụng ngôn ngữ tiếng Việt, ngắn gọn, rõ ràng. "
+                . "Trình bày bằng markdown khi cần. "
+                . "Nếu câu hỏi không liên quan đến tài chính, hãy lịch sự từ chối và gợi ý câu hỏi phù hợp.";
+
+            $aiText = $this->callOpenRouter($systemInstruction, $prompt, 0.7, 1024);
+
+            if (!empty($aiText)) {
+                PhanTichAi::create([
+                    'nguoi_dung_id' => $user->id,
+                    'loai_phan_tich' => 'hoi_dap_ai',
+                    'noi_dung' => "**Câu hỏi:** {$prompt}\n\n**Trả lời:**\n{$aiText}",
+                    'ngay_tao' => Carbon::now(),
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'answer' => $aiText,
+                    ]
+                ]);
+            }
+
+            return response()->json(['success' => false, 'message' => 'Không thể nhận phản hồi từ AI. Vui lòng thử lại.'], 500);
+
+        } catch (\Exception $e) {
+            Log::error("CustomPrompt error: " . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Lỗi hệ thống: ' . $e->getMessage()], 500);
         }
     }

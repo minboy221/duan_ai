@@ -30,7 +30,10 @@ class DashboardController extends Controller
                 'days' => array_map(fn($i) => Carbon::today()->subDays(6-$i)->format('d/m'), range(0, 6)),
                 'incomeTrends' => array_fill(0, 7, 0),
                 'expenseTrends' => array_fill(0, 7, 0),
-                'recentActivity' => collect([])
+                'recentActivity' => collect([]),
+                'monthDaysLabels' => array_map(fn($i) => "Ngày $i", range(1, 31)),
+                'thisMonthValues' => array_fill(0, 31, 0),
+                'lastMonthValues' => array_fill(0, 31, 0),
             ]);
         }
 
