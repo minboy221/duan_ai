@@ -231,15 +231,6 @@ class AiAnalysisController extends Controller
                     'ngay_tao' => Carbon::now(),
                 ]);
 
-
-            if (!empty($aiText)) {
-                PhanTichAi::create([
-                    'nguoi_dung_id' => $user->id,
-                    'loai_phan_tich' => 'thoi_quen_tieu_dung',
-                    'noi_dung' => $aiText,
-                    'ngay_tao' => Carbon::now(),
-                ]);
-
                 return response()->json([
                     'success' => true,
                     'data' => [
@@ -271,9 +262,14 @@ class AiAnalysisController extends Controller
             $categories = \App\Models\DanhMuc::where('nguoi_dung_id', $user->id)->get(['id', 'ten_danh_muc', 'loai']);
             $catList = $categories->map(fn($c) => "{$c->ten_danh_muc} ({$c->loai})")->implode(', ');
 
-            $systemPrompt = "Bạn là trợ lý tài chính. Phân tích câu nói của người dùng và trả về JSON chuẩn: {\"so_tien\": number, \"ten_danh_muc\": string, \"ghi_chu\": string, \"loai\": \"chi\"|\"thu\"}. 
+            $systemPrompt = "Bạn là trợ lý tài chính. Phân tích câu nói của người dùng và trả về JSON chuẩn: {\"so_tien\": number, \"ten_danh_muc\": string, \"ghi_chu\": string, \"loai\": \"thu\"|\"chi\"}. 
+            Lưu ý: 
+            - Nếu là khoản thu (VD: được trả nợ, nhận công việc, nhận lương, thưởng), loai: \"thu\".
+            - Nếu là khoản chi (VD: mua sắm, ăn uống, đổ xăng, trả phí), loai: \"chi\".
             Danh sách danh mục hiện có: [{$catList}].
-            Ví dụ: 'Ăn sáng 30k' -> {\"so_tien\": 30000, \"ten_danh_muc\": \"Ăn uống\", \"ghi_chu\": \"Ăn sáng\", \"loai\": \"chi\"}.
+            Ví dụ: 
+            - 'Ăn sáng 30k' -> {\"so_tien\": 30000, \"ten_danh_muc\": \"Ăn uống\", \"ghi_chu\": \"Ăn sáng\", \"loai\": \"chi\"}.
+            - 'Tuấn trả nợ 50k' -> {\"so_tien\": 50000, \"ten_danh_muc\": \"Thu nợ\", \"ghi_chu\": \"Tuấn trả nợ\", \"loai\": \"thu\"}.
             CHỈ trả về JSON, không có markdown hay text khác.";
 
             $rawJson = $this->callOpenRouter($systemPrompt, $input, 0.1, 256);
@@ -281,15 +277,15 @@ class AiAnalysisController extends Controller
             if ($rawJson) {
                 Log::info('OpenRouter QuickInput Raw Response: ' . $rawJson);
 
-                // Clean markdown if AI returns it
                 $cleanJson = preg_replace('/^```json\s*|\s*```$/m', '', trim($rawJson));
                 $parsed = json_decode($cleanJson, true);
 
                 if ($parsed && isset($parsed['so_tien'])) {
                     $targetCategoryName = trim($parsed['ten_danh_muc']);
-                    $loai = isset($parsed['loai']) ? ($parsed['loai'] === 'thu' ? 'thu' : 'chi') : 'chi';
+                    $loai = isset($parsed['loai']) && $parsed['loai'] === 'thu' ? 'thu' : 'chi';
 
                     $cat = \App\Models\DanhMuc::where('nguoi_dung_id', $user->id)
+                        ->where('loai', $loai)
                         ->where('ten_danh_muc', 'like', $targetCategoryName)
                         ->first();
 
@@ -298,7 +294,7 @@ class AiAnalysisController extends Controller
                             'nguoi_dung_id' => $user->id, 
                             'ten_danh_muc' => $targetCategoryName, 
                             'loai' => $loai,
-                            'bieu_tuong' => 'category'
+                            'bieu_tuong' => ($loai === 'thu' ? 'payments' : 'shopping_cart')
                         ]);
                     }
 
@@ -320,9 +316,10 @@ class AiAnalysisController extends Controller
                         ]);
                     }
 
+                    $typeText = $loai === 'thu' ? 'khoản thu' : 'chi phí';
                     return response()->json([
                         'success' => true,
-                        'message' => "Đã ghi nhận: " . number_format($parsed['so_tien']) . "đ vào mục " . $cat->ten_danh_muc,
+                        'message' => "Đã ghi nhận {$typeText}: " . number_format($parsed['so_tien']) . "đ vào mục " . $cat->ten_danh_muc,
                         'data' => $parsed
                     ]);
                 } else {

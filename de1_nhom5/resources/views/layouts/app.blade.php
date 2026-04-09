@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>@yield('title', 'Ví Chill')</title>
+    <title>@yield('title', 'The Fiscal Curator')</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -96,10 +96,10 @@
                     <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_balance</span>
                 </div>
                 <div>
-                    <h2 class="text-xl font-black text-[#24389c] dark:text-[#3f51b5] leading-tight">Ví Chill</h2>
-                    <p class="font-['Manrope'] text-[10px] font-semibold uppercase tracking-widest text-[#24389c]/60">Quản lý tài chính thông minh</p>
+                    <h2 class="text-xl font-black text-[#24389c] dark:text-[#3f51b5] leading-tight">Fiscal Curator</h2>
+                    <p class="font-['Manrope'] text-[10px] font-semibold uppercase tracking-widest text-[#24389c]/60">Quản lý chi tiêu thông minh</p>
                 </div>
-            </div
+            </div>
         </div>
         <nav class="flex-1 space-y-1">
             <a class="group flex items-center gap-3 px-6 py-3 transition-all font-['Manrope'] text-sm font-semibold {{ request()->routeIs('dashboard') ? 'text-[#24389c] dark:text-[#3f51b5] relative before:content-[\'\'] before:absolute before:left-0 before:w-1 before:h-6 before:bg-[#24389c] before:rounded-full bg-white/40' : 'text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-[#24389c] hover:bg-white/50' }}" href="{{ route('dashboard') }}">
@@ -129,7 +129,7 @@
 
             <a class="group flex items-center gap-3 px-6 py-3 transition-all font-['Manrope'] text-sm font-semibold {{ request()->routeIs('vnpay.index') ? 'text-[#24389c] dark:text-[#3f51b5] relative before:content-[\'\'] before:absolute before:left-0 before:w-1 before:h-6 before:bg-[#24389c] before:rounded-full bg-white/40' : 'text-[#131b2e]/70 dark:text-[#faf8ff]/70 hover:text-[#24389c] hover:bg-white/50' }}" href="{{ route('vnpay.index') }}">
                 <span class="material-symbols-outlined" {{ request()->routeIs('vnpay.index') ? 'style=font-variation-settings:\'FILL\'1;' : '' }}>payments</span>
-                Nạp tiền vào ví
+                VNPay Sandbox
             </a>
         </nav>
         <div class="mt-auto pt-6 border-t border-primary/5">
@@ -166,15 +166,15 @@
         <!-- TopNavBar Anchor -->
         <header class="w-full sticky top-0 z-40 bg-[#faf8ff] dark:bg-[#131b2e] flex justify-between items-center px-6 py-4">
             <div class="flex items-center gap-4 flex-1">
-                <div class="relative max-w-md w-full" id="page-search-container">
+                <div class="relative max-w-md w-full" id="searchContainer">
                     <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-xl">search</span>
-                    <input id="page-search-input" class="w-full bg-surface-container-low border-none rounded-full py-2.5 pl-11 pr-4 text-sm focus:ring-2 focus:ring-primary/20 placeholder:text-outline/60" placeholder="Tìm kiếm trang..." type="text" autocomplete="off"/>
+                    <input id="navSearchInput" autocomplete="off" class="w-full bg-surface-container-low border-none rounded-full py-2.5 pl-11 pr-4 text-sm focus:ring-2 focus:ring-primary/20 placeholder:text-outline/60" placeholder="Tìm kiếm trang (Tổng quan, Giao dịch...)" type="text"/>
                     
                     <!-- Search Results Dropdown -->
-                    <div id="page-search-results" class="hidden absolute top-full left-0 right-0 mt-2 bg-surface-container-lowest border border-outline-variant/20 rounded-xl overflow-hidden shadow-xl z-50">
-                        <ul class="max-h-64 overflow-y-auto" id="page-search-list">
-                            <!-- JS injected results -->
-                        </ul>
+                    <div id="searchResults" class="absolute top-full left-0 right-0 mt-2 bg-surface-container-lowest rounded-2xl shadow-xl border border-outline-variant/10 overflow-hidden hidden animate-in fade-in zoom-in-95 duration-200 z-[100]">
+                        <div class="p-2" id="searchResultsList">
+                            <!-- Results will be injected here -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -229,6 +229,100 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // --- Navigation Search Logic ---
+            const searchInput = document.getElementById('navSearchInput');
+            const searchResults = document.getElementById('searchResults');
+            const searchResultsList = document.getElementById('searchResultsList');
+            const searchContainer = document.getElementById('searchContainer');
+
+            const pages = [
+                { name: 'Tổng quan', route: '{{ route("dashboard") }}', icon: 'dashboard', keywords: 'home dashboard tong quan' },
+                { name: 'Giao dịch', route: '{{ route("transactions.index") }}', icon: 'receipt_long', keywords: 'giao dich transaction billing history' },
+                { name: 'Phân tích AI', route: '{{ route("phantich-ai") }}', icon: 'analytics', keywords: 'ai analysis phan tich curator' },
+                { name: 'Ngân sách', route: '{{ route("ngansach") }}', icon: 'pie_chart', keywords: 'budget ngan sach planning' },
+                { name: 'Tiết kiệm', route: '{{ route("savings.index") }}', icon: 'savings', keywords: 'savings tiet kiem goals' },
+                { name: 'Định kỳ', route: '{{ route("recurring.index") }}', icon: 'event_repeat', keywords: 'recurring dinh ky automatic' },
+                { name: 'VNPay Sandbox', route: '{{ route("vnpay.index") }}', icon: 'payments', keywords: 'vnpay checkout payment sandbox' },
+                { name: 'Danh mục', route: '{{ route("danhmuc.index") }}', icon: 'category', keywords: 'category danh muc tags' },
+                { name: 'Kho an toàn', route: '{{ route("kho-an-toan.auth") }}', icon: 'lock', keywords: 'vault kho an toan secure otp' },
+                { name: 'Hướng dẫn sử dụng', route: '{{ route("huongdan") }}', icon: 'help_outline', keywords: 'help manual huong dan guide' },
+                { name: 'Cài đặt tài khoản', route: '{{ route("profile.edit") }}', icon: 'settings', keywords: 'profile settings cai dat account' },
+                { name: 'Thông báo', route: '{{ route("notifications.index") }}', icon: 'notifications', keywords: 'notifications thong bao alerts' },
+            ];
+
+            let selectedIndex = -1;
+
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const query = this.value.toLowerCase().trim();
+                    if (!query) {
+                        searchResults.classList.add('hidden');
+                        return;
+                    }
+
+                    const filtered = pages.filter(p => 
+                        p.name.toLowerCase().includes(query) || 
+                        p.keywords.toLowerCase().includes(query)
+                    );
+
+                    renderResults(filtered);
+                });
+
+                searchInput.addEventListener('keydown', function(e) {
+                    const items = searchResultsList.querySelectorAll('a');
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                        updateSelection(items);
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        selectedIndex = Math.max(selectedIndex - 1, 0);
+                        updateSelection(items);
+                    } else if (e.key === 'Enter') {
+                        if (selectedIndex >= 0 && items[selectedIndex]) {
+                            items[selectedIndex].click();
+                        }
+                    } else if (e.key === 'Escape') {
+                        searchResults.classList.add('hidden');
+                    }
+                });
+
+                // Close when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!searchContainer.contains(e.target)) {
+                        searchResults.classList.add('hidden');
+                    }
+                });
+            }
+
+            function renderResults(results) {
+                if (results.length === 0) {
+                    searchResultsList.innerHTML = '<div class="p-4 text-center text-xs text-outline italic">Không tìm thấy trang nào...</div>';
+                } else {
+                    searchResultsList.innerHTML = results.map((p, index) => `
+                        <a href="${p.route}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/5 transition-colors group ${index === 0 ? 'bg-primary/5' : ''}">
+                            <div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-outline group-hover:text-primary transition-colors">
+                                <span class="material-symbols-outlined text-sm">${p.icon}</span>
+                            </div>
+                            <span class="text-sm font-semibold text-on-surface">${p.name}</span>
+                        </a>
+                    `).join('');
+                }
+                searchResults.classList.remove('hidden');
+                selectedIndex = results.length > 0 ? 0 : -1;
+            }
+
+            function updateSelection(items) {
+                items.forEach((item, index) => {
+                    if (index === selectedIndex) {
+                        item.classList.add('bg-primary/5');
+                        item.scrollIntoView({ block: 'nearest' });
+                    } else {
+                        item.classList.remove('bg-primary/5');
+                    }
+                });
+            }
+
             // Function to format numbers with commas
             function formatNumber(n) {
                 return n.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -277,60 +371,6 @@
                     });
                 });
             });
-
-            // Page Search functionality
-            const searchPages = [
-                { title: 'Tổng quan (Dashboard)', route: '{{ route('dashboard') }}', icon: 'dashboard' },
-                { title: 'Giao dịch (Transactions)', route: '{{ route('transactions.index') }}', icon: 'receipt_long' },
-                { title: 'Ngân sách (Budget)', route: '{{ route('ngansach') }}', icon: 'pie_chart' },
-                { title: 'Tiết kiệm (Savings)', route: '{{ route('savings.index') }}', icon: 'savings' },
-                { title: 'Định kỳ (Recurring)', route: '{{ route('recurring.index') }}', icon: 'event_repeat' },
-                { title: 'Phân tích AI', route: '{{ route('phantich-ai') }}', icon: 'analytics' },
-                { title: 'Kho an toàn', route: '{{ route('kho-an-toan.auth') }}', icon: 'shield' },
-                { title: 'Danh mục', route: '{{ route('danhmuc.index') }}', icon: 'category' },
-                { title: 'Tài khoản (Profile)', route: '{{ route('profile.edit') }}', icon: 'settings' },
-                { title: 'VNPay Sandbox', route: '{{ route('vnpay.index') }}', icon: 'payments' },
-                { title: 'Hướng dẫn SD', route: '{{ route('huongdan') }}', icon: 'help_outline' }
-            ];
-
-            const pageSearchInput = document.getElementById('page-search-input');
-            const pageSearchResults = document.getElementById('page-search-results');
-            const pageSearchList = document.getElementById('page-search-list');
-
-            if (pageSearchInput && pageSearchResults && pageSearchList) {
-                pageSearchInput.addEventListener('input', function(e) {
-                    const query = e.target.value.toLowerCase().trim();
-                    if (!query) {
-                        pageSearchResults.classList.add('hidden');
-                        return;
-                    }
-
-                    const filtered = searchPages.filter(p => p.title.toLowerCase().includes(query));
-                    if (filtered.length > 0) {
-                        pageSearchList.innerHTML = filtered.map(item => `
-                            <li>
-                                <a href="${item.route}" class="flex items-center gap-3 px-4 py-3 hover:bg-surface-container-low transition-colors text-sm font-semibold text-on-surface">
-                                    <span class="material-symbols-outlined text-outline">${item.icon}</span>
-                                    ${item.title}
-                                </a>
-                            </li>
-                        `).join('');
-                        pageSearchResults.classList.remove('hidden');
-                    } else {
-                        pageSearchList.innerHTML = `
-                            <li class="px-4 py-4 text-center text-sm text-outline italic">Không tìm thấy trang nào</li>
-                        `;
-                        pageSearchResults.classList.remove('hidden');
-                    }
-                });
-
-                // Close dropdown when click outside
-                document.addEventListener('click', function(e) {
-                    if (!e.target.closest('#page-search-container')) {
-                        pageSearchResults.classList.add('hidden');
-                    }
-                });
-            }
         });
     </script>
 </body>

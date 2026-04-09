@@ -202,15 +202,15 @@
         <div class="md:col-span-2 lg:col-span-3 bg-gradient-to-br from-primary via-primary-container to-primary rounded-2xl p-1 shadow-2xl shadow-primary/20" id="aiChatPanel">
             <div class="bg-surface-container-lowest/95 backdrop-blur-xl rounded-[14px] overflow-hidden">
                 <!-- Header -->
-                <div class="bg-gradient-to-r from-primary to-primary-container p-6 text-white">
+                <div class="bg-gradient-to-r from-primary to-primary-container p-6 text-white text-left">
                     <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-4 text-left">
                             <div class="w-12 h-12 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center">
                                 <span class="material-symbols-outlined text-2xl animate-pulse">auto_awesome</span>
                             </div>
-                            <div>
-                                <h4 class="text-xl font-bold">Curator AI — Trợ lý Tài chính</h4>
-                                <p class="text-sm text-white/70">Hỏi bất kỳ điều gì về tài chính của bạn</p>
+                            <div class="text-left">
+                                <h4 class="text-xl font-bold">Curator AI — Trợ lý tài chính</h4>
+                                <p class="text-sm text-white/70">Xử lý tài chính bằng trí tuệ nhân tạo</p>
                             </div>
                         </div>
                         <div class="flex gap-2">
@@ -221,56 +221,106 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Tabs Header -->
+                <div class="flex border-b border-outline-variant/10">
+                    <button id="tabChat" class="flex-1 py-4 text-sm font-bold text-primary border-b-2 border-primary transition-all flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-sm">chat</span>
+                        Hỏi đáp AI
+                    </button>
+                    <button id="tabQuickInput" class="flex-1 py-4 text-sm font-bold text-outline hover:text-primary transition-all flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-sm">edit_note</span>
+                        Nhập chi tiêu nhanh
+                    </button>
+                </div>
                 
-                <!-- Chat Content Area -->
-                <div id="aiChatContent" class="p-6 max-h-[400px] overflow-y-auto space-y-4" style="scroll-behavior: smooth;">
-                    <!-- Default Welcome -->
-                    <div class="flex gap-3" id="aiWelcomeMsg">
-                        <div class="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0 mt-1">
-                            <span class="material-symbols-outlined text-sm">auto_awesome</span>
+                <!-- Chat View -->
+                <div id="chatView" class="block">
+                    <!-- Chat Content Area -->
+                    <div id="aiChatContent" class="p-6 max-h-[350px] min-h-[350px] overflow-y-auto space-y-4 text-left" style="scroll-behavior: smooth;">
+                        <!-- Default Welcome -->
+                        <div class="flex gap-3" id="aiWelcomeMsg">
+                            <div class="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0 mt-1">
+                                <span class="material-symbols-outlined text-sm">auto_awesome</span>
+                            </div>
+                            <div class="flex-1 text-left">
+                                @if($savingsRate < 20 && $monthlyIncome > 0)
+                                    <div class="bg-surface-container-low rounded-2xl rounded-tl-md p-4 text-sm text-on-surface leading-relaxed text-left">
+                                        <p class="mb-2">Xin chào! Tỷ lệ tiết kiệm tháng này của bạn đang ở mức <strong class="text-primary">{{ $savingsRate }}%</strong>.</p>
+                                        <p>Hãy thử hỏi tôi: <em>"Làm sao để tiết kiệm nhiều hơn?"</em> hoặc nhấn <strong>Phân tích tự động</strong> để tôi đánh giá chi tiết.</p>
+                                    </div>
+                                @elseif($savingsRate >= 20)
+                                    <div class="bg-surface-container-low rounded-2xl rounded-tl-md p-4 text-sm text-on-surface leading-relaxed text-left">
+                                        <p class="mb-2">Tuyệt vời! 🎉 Bạn đã tiết kiệm được <strong class="text-secondary">{{ $savingsRate }}%</strong> thu nhập tháng này.</p>
+                                        <p>Hãy hỏi tôi bất kỳ câu hỏi nào về tài chính, ví dụ: <em>"Tôi nên đầu tư vào đâu?"</em></p>
+                                    </div>
+                                @else
+                                    <div class="bg-surface-container-low rounded-2xl rounded-tl-md p-4 text-sm text-on-surface leading-relaxed text-left">
+                                        <p class="mb-2">Chào bạn! Tôi là <strong class="text-primary">Curator AI</strong> — trợ lý tài chính cá nhân của bạn. 👋</p>
+                                        <p>Hãy bắt đầu ghi lại giao dịch và đặt câu hỏi cho tôi để nhận được những gợi ý thông minh nhất!</p>
+                                    </div>
+                                @endif
+                            </div>
                         </div>
-                        <div class="flex-1">
-                            @if($savingsRate < 20 && $monthlyIncome > 0)
-                                <div class="bg-surface-container-low rounded-2xl rounded-tl-md p-4 text-sm text-on-surface leading-relaxed">
-                                    <p class="mb-2">Xin chào! Tỷ lệ tiết kiệm tháng này của bạn đang ở mức <strong class="text-primary">{{ $savingsRate }}%</strong>.</p>
-                                    <p>Hãy thử hỏi tôi: <em>"Làm sao để tiết kiệm nhiều hơn?"</em> hoặc nhấn <strong>Phân tích tự động</strong> để tôi đánh giá chi tiết.</p>
-                                </div>
-                            @elseif($savingsRate >= 20)
-                                <div class="bg-surface-container-low rounded-2xl rounded-tl-md p-4 text-sm text-on-surface leading-relaxed">
-                                    <p class="mb-2">Tuyệt vời! 🎉 Bạn đã tiết kiệm được <strong class="text-secondary">{{ $savingsRate }}%</strong> thu nhập tháng này.</p>
-                                    <p>Hãy hỏi tôi bất kỳ câu hỏi nào về tài chính, ví dụ: <em>"Tôi nên đầu tư vào đâu?"</em></p>
-                                </div>
-                            @else
-                                <div class="bg-surface-container-low rounded-2xl rounded-tl-md p-4 text-sm text-on-surface leading-relaxed">
-                                    <p class="mb-2">Chào bạn! Tôi là <strong class="text-primary">Curator AI</strong> — trợ lý tài chính cá nhân của bạn. 👋</p>
-                                    <p>Hãy bắt đầu ghi lại giao dịch và đặt câu hỏi cho tôi để nhận được những gợi ý thông minh nhất!</p>
-                                </div>
-                            @endif
+                    </div>
+
+                    <!-- Suggested Questions -->
+                    <div class="px-6 pb-3">
+                        <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2" id="suggestedQuestions">
+                            <button onclick="askSuggestion(this)" class="shrink-0 px-3 py-1.5 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-semibold rounded-full transition-all border border-primary/10">💰 Tôi chi tiêu nhiều nhất vào đâu?</button>
+                            <button onclick="askSuggestion(this)" class="shrink-0 px-3 py-1.5 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-semibold rounded-full transition-all border border-primary/10">📊 Phân tích thói quen chi tiêu</button>
+                            <button onclick="askSuggestion(this)" class="shrink-0 px-3 py-1.5 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-semibold rounded-full transition-all border border-primary/10">💡 Gợi ý tiết kiệm cho tôi</button>
+                            <button onclick="askSuggestion(this)" class="shrink-0 px-3 py-1.5 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-semibold rounded-full transition-all border border-primary/10">📈 Dự báo tài chính cuối tháng</button>
+                        </div>
+                    </div>
+
+                    <!-- Chat Input Bar -->
+                    <div class="p-4 border-t border-outline-variant/10 bg-surface-container-lowest">
+                        <div class="flex items-center gap-3">
+                            <div class="flex-1 relative">
+                                <input type="text" id="aiPromptInput" 
+                                    placeholder="Hỏi Curator AI bất kỳ điều gì về tài chính..." 
+                                    class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 pr-12 focus:ring-2 focus:ring-primary text-sm font-medium transition-all">
+                                <button id="btnSendPrompt" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center hover:bg-primary/90 transition-all hover:scale-105 active:scale-95">
+                                    <span class="material-symbols-outlined text-sm">send</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Suggested Questions -->
-                <div class="px-6 pb-3">
-                    <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2" id="suggestedQuestions">
-                        <button onclick="askSuggestion(this)" class="shrink-0 px-3 py-1.5 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-semibold rounded-full transition-all border border-primary/10">💰 Tôi chi tiêu nhiều nhất vào đâu?</button>
-                        <button onclick="askSuggestion(this)" class="shrink-0 px-3 py-1.5 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-semibold rounded-full transition-all border border-primary/10">📊 Phân tích thói quen chi tiêu</button>
-                        <button onclick="askSuggestion(this)" class="shrink-0 px-3 py-1.5 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-semibold rounded-full transition-all border border-primary/10">💡 Gợi ý tiết kiệm cho tôi</button>
-                        <button onclick="askSuggestion(this)" class="shrink-0 px-3 py-1.5 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-semibold rounded-full transition-all border border-primary/10">📈 Dự báo tài chính cuối tháng</button>
-                    </div>
-                </div>
+                <!-- Quick Input View -->
+                <div id="quickInputView" class="hidden">
+                    <div class="p-8 flex flex-col items-center justify-center min-h-[350px] text-center">
+                        <div class="w-16 h-16 bg-secondary/10 text-secondary rounded-2xl flex items-center justify-center mb-6">
+                            <span class="material-symbols-outlined text-3xl">add_shopping_cart</span>
+                        </div>
+                        <h5 class="text-lg font-bold mb-2">Ghi chép chi tiêu nhanh</h5>
+                        <p class="text-sm text-outline mb-8 max-w-[250px]">Nhập bằng lời nói hoặc chữ viết, AI sẽ tự động phân loại giúp bạn.</p>
+                        
+                        <div class="w-full space-y-4 text-left">
+                            <div class="p-4 bg-surface-container-low rounded-xl border border-dashed border-outline-variant text-left">
+                                <p class="text-[10px] font-bold text-outline uppercase mb-2">Ví dụ lệnh hợp lệ:</p>
+                                <ul class="text-xs text-on-surface-variant space-y-1 italic">
+                                    <li>• "Ăn sáng bún bò 45k"</li>
+                                    <li>• "Đổ xăng 50.000đ"</li>
+                                    <li>• "Mua sắm quần áo hết 500k"</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="relative">
+                                <textarea id="aiQuickInput" rows="3"
+                                    placeholder="Ví dụ: Hôm nay chi 50k ăn trưa..." 
+                                    class="w-full bg-surface-container-low border-none rounded-xl px-4 py-4 focus:ring-2 focus:ring-secondary text-sm font-medium transition-all resize-none"></textarea>
+                                <p id="aiInputStatus" class="hidden text-[10px] mt-2 font-bold"></p>
+                            </div>
 
-                <!-- Input Bar -->
-                <div class="p-4 border-t border-outline-variant/10 bg-surface-container-lowest">
-                    <div class="flex items-center gap-3">
-                        <div class="flex-1 relative">
-                            <input type="text" id="aiPromptInput" 
-                                placeholder="Hỏi Curator AI bất kỳ điều gì về tài chính..." 
-                                class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 pr-12 focus:ring-2 focus:ring-primary text-sm font-medium transition-all">
-                            <button id="btnSendPrompt" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center hover:bg-primary/90 transition-all hover:scale-105 active:scale-95">
-                                <span class="material-symbols-outlined text-sm">send</span>
+                            <button id="btnAiSubmit" class="w-full py-4 bg-secondary text-white font-bold rounded-xl shadow-lg shadow-secondary/20 hover:shadow-secondary/40 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined">auto_fix_high</span>
+                                Ghi nhận chi tiêu
                             </button>
                         </div>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -284,6 +334,38 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // --- Tab Switching Logic ---
+        const tabChat = document.getElementById('tabChat');
+        const tabQuickInput = document.getElementById('tabQuickInput');
+        const chatView = document.getElementById('chatView');
+        const quickInputView = document.getElementById('quickInputView');
+
+        if (tabChat && tabQuickInput && chatView && quickInputView) {
+            tabChat.addEventListener('click', () => {
+                chatView.classList.remove('hidden');
+                chatView.classList.add('block');
+                quickInputView.classList.remove('block');
+                quickInputView.classList.add('hidden');
+                
+                tabChat.classList.add('text-primary', 'border-b-2', 'border-primary');
+                tabChat.classList.remove('text-outline');
+                tabQuickInput.classList.remove('text-primary', 'border-b-2', 'border-primary');
+                tabQuickInput.classList.add('text-outline');
+            });
+
+            tabQuickInput.addEventListener('click', () => {
+                quickInputView.classList.remove('hidden');
+                quickInputView.classList.add('block');
+                chatView.classList.remove('block');
+                chatView.classList.add('hidden');
+                
+                tabQuickInput.classList.add('text-primary', 'border-b-2', 'border-primary');
+                tabQuickInput.classList.remove('text-outline');
+                tabChat.classList.remove('text-primary', 'border-b-2', 'border-primary');
+                tabChat.classList.add('text-outline');
+            });
+        }
+
         // --- Modal Logic ---
         const modal = document.getElementById('welcomeModal');
         const modalContent = document.getElementById('modalContent');
