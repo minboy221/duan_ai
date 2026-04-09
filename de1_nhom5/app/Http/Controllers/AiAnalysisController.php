@@ -262,10 +262,14 @@ class AiAnalysisController extends Controller
             $categories = \App\Models\DanhMuc::where('nguoi_dung_id', $user->id)->get(['id', 'ten_danh_muc', 'loai']);
             $catList = $categories->map(fn($c) => "{$c->ten_danh_muc} ({$c->loai})")->implode(', ');
 
-            $systemPrompt = "Bạn là trợ lý tài chính. Phân tích câu nói của người dùng và trả về JSON chuẩn: {\"so_tien\": number, \"ten_danh_muc\": string, \"ghi_chu\": string, \"loai\": \"chi\"}. 
-            Lưu ý: CHỈ được phép xử lý các khoản chi tiêu (loai: chi). Nếu nội dung là khoản thu, vẫn phải trả về loai: chi nhưng ghi chú là nội dung gốc.
+            $systemPrompt = "Bạn là trợ lý tài chính. Phân tích câu nói của người dùng và trả về JSON chuẩn: {\"so_tien\": number, \"ten_danh_muc\": string, \"ghi_chu\": string, \"loai\": \"thu\"|\"chi\"}. 
+            Lưu ý: 
+            - Nếu là khoản thu (VD: được trả nợ, nhận công việc, nhận lương, thưởng), loai: \"thu\".
+            - Nếu là khoản chi (VD: mua sắm, ăn uống, đổ xăng, trả phí), loai: \"chi\".
             Danh sách danh mục hiện có: [{$catList}].
-            Ví dụ: 'Ăn sáng 30k' -> {\"so_tien\": 30000, \"ten_danh_muc\": \"Ăn uống\", \"ghi_chu\": \"Ăn sáng\", \"loai\": \"chi\"}.
+            Ví dụ: 
+            - 'Ăn sáng 30k' -> {\"so_tien\": 30000, \"ten_danh_muc\": \"Ăn uống\", \"ghi_chu\": \"Ăn sáng\", \"loai\": \"chi\"}.
+            - 'Tuấn trả nợ 50k' -> {\"so_tien\": 50000, \"ten_danh_muc\": \"Thu nợ\", \"ghi_chu\": \"Tuấn trả nợ\", \"loai\": \"thu\"}.
             CHỈ trả về JSON, không có markdown hay text khác.";
 
             $rawJson = $this->callOpenRouter($systemPrompt, $input, 0.1, 256);
@@ -278,10 +282,10 @@ class AiAnalysisController extends Controller
 
                 if ($parsed && isset($parsed['so_tien'])) {
                     $targetCategoryName = trim($parsed['ten_danh_muc']);
-                    $loai = 'chi'; // Cưỡng ép chỉ là khoản chi theo yêu cầu user
+                    $loai = isset($parsed['loai']) && $parsed['loai'] === 'thu' ? 'thu' : 'chi';
 
                     $cat = \App\Models\DanhMuc::where('nguoi_dung_id', $user->id)
-                        ->where('loai', 'chi')
+                        ->where('loai', $loai)
                         ->where('ten_danh_muc', 'like', $targetCategoryName)
                         ->first();
 
@@ -289,22 +293,33 @@ class AiAnalysisController extends Controller
                         $cat = \App\Models\DanhMuc::create([
                             'nguoi_dung_id' => $user->id, 
                             'ten_danh_muc' => $targetCategoryName, 
-                            'loai' => 'chi',
-                            'bieu_tuong' => 'payments'
+                            'loai' => $loai,
+                            'bieu_tuong' => ($loai === 'thu' ? 'payments' : 'shopping_cart')
                         ]);
                     }
 
-                    \App\Models\GiaoDich::create([
-                        'nguoi_dung_id' => $user->id,
-                        'danh_muc_id' => $cat->id,
-                        'so_tien' => $parsed['so_tien'],
-                        'ngay_giao_dich' => now(),
-                        'ghi_chu' => $parsed['ghi_chu'] ?? 'Nhập liệu AI: ' . $input,
-                    ]);
+                    if ($loai === 'thu') {
+                        \App\Models\KhoanThu::create([
+                            'nguoi_dung_id' => $user->id,
+                            'danh_muc_id' => $cat->id,
+                            'so_tien' => $parsed['so_tien'],
+                            'ngay_nhan' => now(),
+                            'nguon_thu' => $parsed['ghi_chu'] ?? 'Nhập liệu AI: ' . $input,
+                        ]);
+                    } else {
+                        \App\Models\GiaoDich::create([
+                            'nguoi_dung_id' => $user->id,
+                            'danh_muc_id' => $cat->id,
+                            'so_tien' => $parsed['so_tien'],
+                            'ngay_giao_dich' => now(),
+                            'ghi_chu' => $parsed['ghi_chu'] ?? 'Nhập liệu AI: ' . $input,
+                        ]);
+                    }
 
+                    $typeText = $loai === 'thu' ? 'khoản thu' : 'chi phí';
                     return response()->json([
                         'success' => true,
-                        'message' => "Đã ghi nhận chi phí: " . number_format($parsed['so_tien']) . "đ vào mục " . $cat->ten_danh_muc,
+                        'message' => "Đã ghi nhận {$typeText}: " . number_format($parsed['so_tien']) . "đ vào mục " . $cat->ten_danh_muc,
                         'data' => $parsed
                     ]);
                 } else {
